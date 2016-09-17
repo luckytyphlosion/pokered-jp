@@ -124,6 +124,7 @@ charmap "は", $CA
 charmap "ひ", $CB
 charmap "ふ", $CC
 charmap "へ", $CD
+charmap "ヘ", $CD
 charmap "ほ", $CE
 charmap "ま", $CF
 charmap "み", $D0

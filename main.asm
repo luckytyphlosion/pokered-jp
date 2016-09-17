@@ -20,14 +20,29 @@ SECTION "bank1",ROMX,BANK[$1]
 MewBaseStats:: ; 01:4200
 	dr $4200, $421C
 
-ItemPrices:: ; 01:421C
-	dr $421C, $433F
+INCLUDE "data/item_prices.asm"
+INCLUDE "text/item_names.asm"
 
-ItemNames:: ; 01:433F
-	dr $433F, $45F5
-
-UnusedNames:: ; 01:45F5
-	dr $45F5, $4672
+UnusedNames::
+	db "かみなりバッヂ@"
+	db "かいがらバッヂ@"
+	db "おじぞうバッヂ@"
+	db "はやぶさバッヂ@"
+	db "ひんやりバッヂ@"
+	db "なかよしバッヂ@"
+	db "バラバッヂ@"
+	db "ひのたまバッヂ@"
+	db "ゴールドバッヂ@"
+	db "たまご@"
+	db "ひよこ@"
+	db "ブロンズ@"
+	db "シルバー@"
+	db "ゴールド@"
+	db "プチキャプテン@"
+	db "キャプテン@"
+	db "プチマスター@"
+	db "マスター@"
+	db "エクセレント"
 
 PrepareOAMData:: ; 4672
 	dr $4672, $4750
@@ -419,8 +434,11 @@ PrintBookshelfText:: ; 03:7E8A
 	dr $FE8A, $4000 * $4
 
 SECTION "bank4",ROMX,BANK[$4]
-MoveNames:: ; 04:4000
-	dr $10000, $10B19
+
+INCLUDE "text/move_names.asm"
+
+	dr $10419, $10B19
+
 FontGraphics:: ; 04:4B19
 	dr $10B19, $10F19
 FontGraphicsEnd:: ; 04:4F19
@@ -831,8 +849,9 @@ _Divide:: ; 0D:7ED7
 SECTION "bankE",ROMX,BANK[$E]
 BaseStats:: ; 0E:4000
 	dr $38000, $39068
-MonsterNames:: ; 0E:5068
-	dr $39068, $3941E
+
+INCLUDE "text/monster_names.asm"
+
 CryData:: ; 0E:541E
 	dr $3941E, $39C31
 TrainerPicAndMoneyPointers:: ; 0E:5C31

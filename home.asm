@@ -4028,6 +4028,7 @@ PrintText_NoCreatingTextBox::
 	coord bc, 1, 14
 	jp TextCommandProcessor
 
+
 PrintNumber::
 ; Print the c-digit, b-byte value at de.
 ; Allows 2 to 7 digits. For 1-digit numbers, add
