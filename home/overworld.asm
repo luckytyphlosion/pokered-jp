@@ -103,8 +103,6 @@ OverworldLoopLessDelay::
 	jr nz,.checkForOpponent
 	bit 0,a
 	jr nz,.checkForOpponent
-	aCoord 8, 9
-	ld [wTilePlayerStandingOn],a ; unused?
 	call DisplayTextID ; display either the start menu or the NPC/sign text
 	ld a,[wEnteringCableClub]
 	and a
@@ -1295,11 +1293,6 @@ CheckForJumpingAndTilePairCollisions::
 	bit 6,a ; is the player jumping?
 	ret nz
 ; if not jumping
-
-CheckForTilePairCollisions2::
-	aCoord 8, 9 ; tile the player is on
-	ld [wTilePlayerStandingOn],a
-
 CheckForTilePairCollisions::
 	ld a,[wTileInFrontOfPlayer]
 	ld c,a
@@ -1316,7 +1309,7 @@ CheckForTilePairCollisions::
 	inc hl
 	jr .tilePairCollisionLoop
 .tilesetMatches
-	ld a,[wTilePlayerStandingOn] ; tile the player is on
+	aCoord 8, 9 ; tile the player is on
 	ld b,a
 	ld a,[hl]
 	cp b

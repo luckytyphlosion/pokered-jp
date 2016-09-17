@@ -48,9 +48,13 @@ CableClub_Run:: ; 01:5889
 EmptyFunc3:: ; 01:58DA
 	dr $58DA, $58DB
 Diploma_TextBoxBorder:: ; 01:58DB
-	dr $58DB, $6233
+	dr $58DB, $5BB6
+SpecialEnterMap:: ; 01:5BB6
+	dr $5BB6, $6233
 DisplayPicCenteredOrUpperRight:: ; 01:6233
-	dr $6233, $6479
+	dr $6233, $6260
+SpecialWarpIn:: ; 01:6260
+	dr $6260, $6479
 AskName:: ; 01:6479
 	dr $6479, $6ABC
 SubtractAmountPaidFromMoney_:: ; 01:6ABC
@@ -68,7 +72,9 @@ DisplayTextIDInit:: ; 01:724B
 DrawStartMenu:: ; 01:72C0
 	dr $72C0, $736B
 CableClubNPC:: ; 01:736B
-	dr $736B, $8000
+	dr $736B, $755F
+ResetStatusAndHalveMoneyOnBlackout:: ; 01:755F
+	dr $755F, $8000
 
 SECTION "bank2",ROMX,BANK[$2]
 INCLUDE "audio/engine_1.asm"
@@ -295,9 +301,23 @@ PrintStrengthTxt:: ; 03:4529
 AddItemToInventory_:: ; 03:45E2
 	dr $C5E2, $C652
 RemoveItemFromInventory_:: ; 03:4652
-	dr $C652, $C883
+	dr $C652, $C693
+MapSongBanks:: ; 03:4693
+	dr $C693, $C883
 MapHeaderBanks:: ; 03:4883
-	dr $C883, $CB75
+	dr $C883, $C97B
+ClearVariablesAfterLoadingMapData:: ; 03:497B
+	dr $C97B, $C9A5
+IsPlayerStandingOnWarp:: ; 03:49A5
+	dr $C9A5, $C9D1
+CheckForceBikeOrSurf:: ; 03:49D1
+	dr $C9D1, $CA45
+IsPlayerFacingEdgeOfMap:: ; 03:4A45
+	dr $CA45, $CA94
+IsWarpTileInFrontOfPlayer:: ; 03:4A94
+	dr $CA94, $CAE3
+IsPlayerStandingOnDoorTileOrWarpTile:: ; 03:4AE3
+	dr $CAE3, $CB75
 PrintSafariZoneSteps:: ; 03:4B75
 	dr $CB75, $CBBF
 GetTileAndCoordsInFrontOfPlayer:: ; 03:4BBF
@@ -309,7 +329,9 @@ CheckForCollisionWhenPushingBoulder:: ; 03:4C44
 ApplyOutOfBattlePoisonDamage:: ; 03:4CD5
 	dr $CCD5, $CD8D
 LoadTilesetHeader:: ; 03:4D8D
-	dr $CD8D, $ED0E
+	dr $CD8D, $CF2E
+LoadWildData:: ; 03:4F2E
+	dr $CF2E, $ED0E
 DrawBadges:: ; 03:6D0E
 	dr $ED0E, $F1A9
 ReplaceTileBlock:: ; 03:71A9
@@ -327,7 +349,11 @@ ShowObject:: ; 03:74FA
 ShowObject2:: ; 03:74FA
 	dr $F4FA, $F509
 HideObject:: ; 03:7509
-	dr $F509, $F617
+	dr $F509, $F557
+TryPushingBoulder:: ; 03:7557
+	dr $F557, $F5E7
+DoBoulderDustAnimation:: ; 03:75E7
+	dr $F5E7, $F617
 _AddPartyMon:: ; 03:7617
 	dr $F617, $F7A9
 LoadMovePPs:: ; 03:77A9
@@ -398,7 +424,46 @@ StatusScreen2:: ; 04:7896
 	dr $13896, $4000 * $5
 
 SECTION "bank5",ROMX,BANK[$5]
-INCBIN "baserom.gbc", $4000 * $5, $3840
+RedCyclingSprite:     INCBIN "gfx/sprites/cycling.2bpp"
+RedSprite:            INCBIN "gfx/sprites/red.2bpp"
+BlueSprite:           INCBIN "gfx/sprites/blue.2bpp"
+OakSprite:            INCBIN "gfx/sprites/oak.2bpp"
+BugCatcherSprite:     INCBIN "gfx/sprites/bug_catcher.2bpp"
+SlowbroSprite:        INCBIN "gfx/sprites/slowbro.2bpp"
+LassSprite:           INCBIN "gfx/sprites/lass.2bpp"
+BlackHairBoy1Sprite:  INCBIN "gfx/sprites/black_hair_boy_1.2bpp"
+LittleGirlSprite:     INCBIN "gfx/sprites/little_girl.2bpp"
+BirdSprite:           INCBIN "gfx/sprites/bird.2bpp"
+FatBaldGuySprite:     INCBIN "gfx/sprites/fat_bald_guy.2bpp"
+GamblerSprite:        INCBIN "gfx/sprites/gambler.2bpp"
+BlackHairBoy2Sprite:  INCBIN "gfx/sprites/black_hair_boy_2.2bpp"
+GirlSprite:           INCBIN "gfx/sprites/girl.2bpp"
+HikerSprite:          INCBIN "gfx/sprites/hiker.2bpp"
+FoulardWomanSprite:   INCBIN "gfx/sprites/foulard_woman.2bpp"
+GentlemanSprite:      INCBIN "gfx/sprites/gentleman.2bpp"
+DaisySprite:          INCBIN "gfx/sprites/daisy.2bpp"
+BikerSprite:          INCBIN "gfx/sprites/biker.2bpp"
+SailorSprite:         INCBIN "gfx/sprites/sailor.2bpp"
+CookSprite:           INCBIN "gfx/sprites/cook.2bpp"
+BikeShopGuySprite:    INCBIN "gfx/sprites/bike_shop_guy.2bpp"
+MrFujiSprite:         INCBIN "gfx/sprites/mr_fuji.2bpp"
+GiovanniSprite:       INCBIN "gfx/sprites/giovanni.2bpp"
+RocketSprite:         INCBIN "gfx/sprites/rocket.2bpp"
+MediumSprite:         INCBIN "gfx/sprites/medium.2bpp"
+WaiterSprite:         INCBIN "gfx/sprites/waiter.2bpp"
+ErikaSprite:          INCBIN "gfx/sprites/erika.2bpp"
+MomGeishaSprite:      INCBIN "gfx/sprites/mom_geisha.2bpp"
+BrunetteGirlSprite:   INCBIN "gfx/sprites/brunette_girl.2bpp"
+LanceSprite:          INCBIN "gfx/sprites/lance.2bpp"
+MomSprite:            INCBIN "gfx/sprites/mom.2bpp"
+BaldingGuySprite:     INCBIN "gfx/sprites/balding_guy.2bpp"
+YoungBoySprite:       INCBIN "gfx/sprites/young_boy.2bpp"
+GameboyKidSprite:     INCBIN "gfx/sprites/gameboy_kid.2bpp"
+ClefairySprite:       INCBIN "gfx/sprites/clefairy.2bpp"
+AgathaSprite:         INCBIN "gfx/sprites/agatha.2bpp"
+BrunoSprite:          INCBIN "gfx/sprites/bruno.2bpp"
+LoreleiSprite:        INCBIN "gfx/sprites/lorelei.2bpp"
+SeelSprite:           INCBIN "gfx/sprites/seel.2bpp"
 
 InitMapSprites:: ; 05:7840
 	dr $17840, $17C47
@@ -409,14 +474,24 @@ EmotionBubble:: ; 05:7C47
 SECTION "bank6",ROMX,BANK[$6]
 INCBIN "baserom.gbc", $4000 * $6, $DEE
 
-TrackPlayTime::
-	dr ($6 * $4000) + $DEE, $4000 * $7
+TrackPlayTime:: ; 06:4DEE
+	dr $18DEE, $1BC98
+PlayerStepOutFromDoor:: ; 06:7C98
+	dr $1BC98, $1BCD5
+_EndNPCMovementScript:: ; 06:7CD5
+	dr $1BCD5, $1BF2A
+HandleLedges:: ; 06:7F2A
+	dr $1BF2A, $4000 * $7
 
 SECTION "bank7",ROMX,BANK[$7]
 INCBIN "baserom.gbc", $4000 * $7, $270
 
 DisplayElevatorFloorMenu:: ; 07:4270
-	dr $1C270, $1FA99
+	dr $1C270, $1FA34
+SafariZoneCheck:: ; 07:7A34
+	dr $1FA34, $1FA43
+SafariZoneCheckSteps:: ; 07:7A43
+	dr $1FA43, $1FA99
 PrintSafariGameOverText:: ; 07:7A99
 	dr $1FA99, $4000 * $8
 
@@ -712,7 +787,9 @@ DrawEnemyHUDAndHPBar:: ; 0F:4F49
 DisplayBattleMenu:: ; 0F:500D
 	dr $3D00D, $3EFF3
 DoubleOrHalveSelectedStats:: ; 0F:6FF3
-	dr $3EFF3, $3F20A
+	dr $3EFF3, $3F204
+InitBattle:: ; 0F:7204
+	dr $3F204, $3F20A
 InitOpponent:: ; 0F:720A
 	dr $3F20A, $3F366
 AnimateSendingOutMon:: ; 0F:7366
@@ -740,7 +817,9 @@ SECTION "bank11",ROMX,BANK[$11]
 INCBIN "baserom.gbc", $4000 * $11, $28E
 
 DisplayDexRating:: ; 11:428E
-	dr $4428E, $4000 * $12
+	dr $4428E, $457B0
+LoadSpinnerArrowTiles:: ; 11:57B0
+	dr $457B0, $4000 * $12
 
 SECTION "bank12",ROMX,BANK[$12]
 INCBIN "baserom.gbc", $4000 * $12, $EB
@@ -800,7 +879,11 @@ HallOfFamePC:: ; 1C:4000
 EnterMapAnim:: ; 1C:4A61
 	dr $70A61, $70B0B
 _LeaveMapAnim:: ; 1C:4B0B
-	dr $70B0B, $70ED9
+	dr $70B0B, $70CD8
+IsPlayerStandingOnWarpPadOrHole:: ; 1C:4CD8
+	dr $70CD8, $70DEA
+_HandleMidJump:: ; 1C:4DEA
+	dr $70DEA, $70ED9
 BattleTransition:: ; 1C:4ED9
 	dr $70ED9, $710C9
 FlashScreen:: ; 1C:50C9

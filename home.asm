@@ -1292,21 +1292,12 @@ ChooseFlyDestination::
 	res 4,[hl]
 	jpba LoadTownMap_Fly
 
+MapHeaderPointers::
 	dr $1BCB, $1DBB
 
-	dr $1DBB, $23AE
+INCLUDE "home/overworld.asm"
 
-LoadPlayerSpriteGraphics:: ; 23AE
-	dr $23AE, $23FF
-
-LoadTilesetTilePatternData:: ; 23FF
-	dr $23FF, $26BB
-
-LoadCurrentMapView:: ; 26BB
-	dr $26BB, $2CCD
-
-SwitchToMapRomBank:: ; 2CCD
-	dr $2CCD, $2D68
+	dr $2D09, $2D68
 
 LoadMonData:: ; 2D68
 	dr $2D68, $2DC7
@@ -1330,7 +1321,16 @@ IsKeyItem:: ; 3121
 	dr $3121, $3130
 
 DisplayTextBoxID:: ; 3130
-	dr $3130, $34AA
+	dr $3130, $3145
+
+IsPlayerCharacterBeingControlledByGame:: ; 3145
+	dr $3145, $3156
+
+RunNPCMovementScript:: ; 3156
+	dr $3156, $319F
+
+StoreTrainerHeaderPointer:: ; 319F
+	dr $319F, $34AA
 
 FuncTX_ItemStoragePC:: ; 34AA
 	dr $34AA, $34B4
