@@ -227,25 +227,28 @@ SECTION "bank4",ROMX,BANK[$4]
 
 INCLUDE "text/move_names.asm"
 
-PokemonLogoGraphics:: ; 04:4419
-	dr $10419, $10B19
-FontGraphics:: ; 04:4B19
-	dr $10B19, $10F19
-FontGraphicsEnd:: ; 04:4F19
-	dr $10F19, $10F39
-HpBarAndStatusGraphics:: ; 04:4F39
-	dr $10F39, $11119
-HpBarAndStatusGraphicsEnd:: ; 04:5119
-	dr $11119, $11161
-CopyrightGraphics:: INCBIN "gfx/copyright.2bpp"
+PokemonLogoGraphics:            INCBIN "gfx/pokemon_logo.2bpp"
+FontGraphics:                   INCBIN "gfx/font.1bpp"
+FontGraphicsEnd:
+ABTiles:                        INCBIN "gfx/AB.2bpp"
+HpBarAndStatusGraphics:         INCBIN "gfx/hp_bar_and_status.2bpp"
+HpBarAndStatusGraphicsEnd:
+BattleHudTiles1:                INCBIN "gfx/battle_hud1.1bpp"
+BattleHudTiles1End:
+BattleHudTiles2:                INCBIN "gfx/battle_hud2.1bpp"
+BattleHudTiles3:                INCBIN "gfx/battle_hud3.1bpp"
+BattleHudTiles3End:
+CopyrightGraphics::             INCBIN "gfx/copyright.2bpp"
 CopyrightGraphicsEnd::
-TextBoxGraphics:: ; 04:52F1
-	dr $112F1, $114F1
-TextBoxGraphicsEnd:: ; 04:54F1
-	dr $114F1, $11711
-PlayerCharacterTitleGraphics:: ; 04:5711
-	dr $11711, $11941
-PlayerCharacterTitleGraphicsEnd:: ; 04:5941
+TextBoxGraphics:                INCBIN "gfx/text_box.2bpp"
+TextBoxGraphicsEnd:
+PokedexTileGraphics:            INCBIN "gfx/pokedex.2bpp"
+PokedexTileGraphicsEnd:
+WorldMapTileGraphics:           INCBIN "gfx/town_map.2bpp"
+WorldMapTileGraphicsEnd:
+PlayerCharacterTitleGraphics:   INCBIN "gfx/player_title.2bpp"
+PlayerCharacterTitleGraphicsEnd:
+
 RedPicFront:: ; 04:5941
 	dr $11941, $11AD7
 UpdateSpriteFacingOffsetAndDelayMovement:: ; 04:5AD7
