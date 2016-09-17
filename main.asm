@@ -16,11 +16,14 @@ PICS_5 EQU $D
 
 INCLUDE "home.asm"
 
-SECTION "bank1",ROMX,BANK[$1]
-	dr $4000, $4200
 
-MewBaseStats:: ; 01:4200
-	dr $4200, $421C
+SECTION "bank1",ROMX,BANK[$1]
+
+INCLUDE "data/facing.asm"
+
+MewPicFront:: INCBIN "pic/rgmon/mew.pic"
+MewPicBack::  INCBIN "pic/monback/mewb.pic"
+INCLUDE "data/baseStats/mew.asm"
 
 INCLUDE "data/item_prices.asm"
 INCLUDE "text/item_names.asm"
@@ -46,14 +49,12 @@ UnusedNames::
 	db "マスター@"
 	db "エクセレント"
 
-PrepareOAMData:: ; 4672
-	dr $4672, $4750
+INCLUDE "engine/overworld/oam.asm"
+INCLUDE "engine/oam_dma.asm"
+INCLUDE "engine/titlescreen.asm"
 
-WriteDMACodeToHRAM:: ; 4750
-	dr $4750, $476E
-
-SetDefaultNamesBeforeTitlescreen:: ; 476E
-	dr $476E, $49ED
+NintenText: db "やまぐち@"
+SonyText:   db "いしはら@"
 
 PrintWaitingText:: ; 49ED
 	dr $49ED, $4A1C
@@ -68,7 +69,9 @@ CableClub_Run:: ; 01:5889
 EmptyFunc3:: ; 01:58DA
 	dr $58DA, $58DB
 Diploma_TextBoxBorder:: ; 01:58DB
-	dr $58DB, $5BB6
+	dr $58DB, $591D
+MainMenu:: ; 01:591D
+	dr $591D, $5BB6
 SpecialEnterMap:: ; 01:5BB6
 	dr $5BB6, $6233
 DisplayPicCenteredOrUpperRight:: ; 01:6233
@@ -224,8 +227,8 @@ SECTION "bank4",ROMX,BANK[$4]
 
 INCLUDE "text/move_names.asm"
 
+PokemonLogoGraphics:: ; 04:4419
 	dr $10419, $10B19
-
 FontGraphics:: ; 04:4B19
 	dr $10B19, $10F19
 FontGraphicsEnd:: ; 04:4F19
@@ -233,11 +236,16 @@ FontGraphicsEnd:: ; 04:4F19
 HpBarAndStatusGraphics:: ; 04:4F39
 	dr $10F39, $11119
 HpBarAndStatusGraphicsEnd:: ; 04:5119
-	dr $11119, $112F1
+	dr $11119, $11161
+CopyrightGraphics:: INCBIN "gfx/copyright.2bpp"
+CopyrightGraphicsEnd::
 TextBoxGraphics:: ; 04:52F1
 	dr $112F1, $114F1
 TextBoxGraphicsEnd:: ; 04:54F1
-	dr $114F1, $11941
+	dr $114F1, $11711
+PlayerCharacterTitleGraphics:: ; 04:5711
+	dr $11711, $11941
+PlayerCharacterTitleGraphicsEnd:: ; 04:5941
 RedPicFront:: ; 04:5941
 	dr $11941, $11AD7
 UpdateSpriteFacingOffsetAndDelayMovement:: ; 04:5AD7
@@ -351,8 +359,10 @@ HandleLedges:: ; 06:7F2A
 	dr $1BF2A, $4000 * $7
 
 SECTION "bank7",ROMX,BANK[$7]
-INCBIN "baserom.gbc", $4000 * $7, $270
+INCBIN "baserom.gbc", $4000 * $7, $21E
 
+DoClearSaveDialogue:: ; 07:421E
+	dr $1C21E, $1C270
 DisplayElevatorFloorMenu:: ; 07:4270
 	dr $1C270, $1FA34
 SafariZoneCheck:: ; 07:7A34
@@ -579,7 +589,11 @@ SECTION "bank19",ROMX,BANK[$19]
 INCBIN "baserom.gbc", $4000 * $19, $4000
 
 SECTION "bank1A",ROMX,BANK[$1A]
-INCBIN "baserom.gbc", $4000 * $1A, $4000
+
+Version_GFX:: ; 1A:4000
+	dr $68000, $68050
+Version_GFXEnd:: ; 1A:4050
+	dr $68050, $4000 * $1B
 
 SECTION "bank1B",ROMX,BANK[$1B]
 INCBIN "baserom.gbc", $4000 * $1B, $4000
