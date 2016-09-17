@@ -1256,14 +1256,51 @@ GetMoveName::
 	pop hl
 	ret
 
-ReloadMapData:: ; 1B86
-	dr $1B86, $1BA5
+; reloads text box tile patterns, current map view, and tileset tile patterns
+ReloadMapData::
+	ld a,[H_LOADEDROMBANK]
+	push af
+	ld a,[wCurMap]
+	call SwitchToMapRomBank
+	call DisableLCD
+	call LoadTextBoxTilePatterns
+	call LoadCurrentMapView
+	call LoadTilesetTilePatternData
+	call EnableLCD
+	pop af
+	ld [H_LOADEDROMBANK],a
+	ld [MBC1RomBank],a
+	ret
 
-ReloadTilesetTilePatterns:: ; 1BA5
-	dr $1BA5, $23AE
+; reloads tileset tile patterns
+ReloadTilesetTilePatterns::
+	ld a,[H_LOADEDROMBANK]
+	push af
+	ld a,[wCurMap]
+	call SwitchToMapRomBank
+	call DisableLCD
+	call LoadTilesetTilePatternData
+	call EnableLCD
+	pop af
+	ld [H_LOADEDROMBANK],a
+	ld [MBC1RomBank],a
+	ret
+
+; shows the town map and lets the player choose a destination to fly to
+ChooseFlyDestination::
+	ld hl,wd72e
+	res 4,[hl]
+	jpba LoadTownMap_Fly
+
+	dr $1BCB, $1DBB
+
+	dr $1DBB, $23AE
 
 LoadPlayerSpriteGraphics:: ; 23AE
-	dr $23AE, $26BB
+	dr $23AE, $23FF
+
+LoadTilesetTilePatternData:: ; 23FF
+	dr $23FF, $26BB
 
 LoadCurrentMapView:: ; 26BB
 	dr $26BB, $2CCD

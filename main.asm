@@ -295,7 +295,9 @@ PrintStrengthTxt:: ; 03:4529
 AddItemToInventory_:: ; 03:45E2
 	dr $C5E2, $C652
 RemoveItemFromInventory_:: ; 03:4652
-	dr $C652, $CB75
+	dr $C652, $C883
+MapHeaderBanks:: ; 03:4883
+	dr $C883, $CB75
 PrintSafariZoneSteps:: ; 03:4B75
 	dr $CB75, $CBBF
 GetTileAndCoordsInFrontOfPlayer:: ; 03:4BBF
@@ -804,7 +806,9 @@ BattleTransition:: ; 1C:4ED9
 FlashScreen:: ; 1C:50C9
 	dr $710C9, $714CE
 LoadTownMap_Nest:: ; 1C:54CE
-	dr $714CE, $71F9D
+	dr $714CE, $714FE
+LoadTownMap_Fly:: ; 1C:54FE
+	dr $714FE, $71F9D
 DoInGameTradeDialogue:: ; 1C:5F9D
 	dr $71F9D, $723BF
 _RunPaletteCommand:: ; 1C:63BF
