@@ -365,7 +365,9 @@ UseItem_:: ; 03:563D
 TossItem_:: ; 03:69C4
 	dr $E9C4, $EA6F
 IsKeyItem_:: ; 03:6A6F
-	dr $EA6F, $ED0E
+	dr $EA6F, $EAAF
+SendNewMonToBox:: ; 03:6AAF
+	dr $EAAF, $ED0E
 DrawBadges:: ; 03:6D0E
 	dr $ED0E, $F1A9
 ReplaceTileBlock:: ; 03:71A9
@@ -851,12 +853,11 @@ BaseStats:: ; 0E:4000
 	dr $38000, $39068
 
 INCLUDE "text/monster_names.asm"
+INCLUDE "data/cries.asm"
 
-CryData:: ; 0E:541E
-	dr $3941E, $39C31
-TrainerPicAndMoneyPointers:: ; 0E:5C31
-	dr $39C31, $39D1C
+	dr $39658, $39C31
 
+INCLUDE "engine/battle/trainer_pic_money_pointers.asm"
 INCLUDE "text/trainer_names.asm"
 
 	dr $39E5F, $3AD11
@@ -879,7 +880,9 @@ DrawPlayerHUDAndHPBar:: ; 0F:4EBE
 DrawEnemyHUDAndHPBar:: ; 0F:4F49
 	dr $3CF49, $3D00D
 DisplayBattleMenu:: ; 0F:500D
-	dr $3D00D, $3EFF3
+	dr $3D00D, $3EDF1
+LoadEnemyMonData:: ; 0F:6DF1
+	dr $3EDF1, $3EFF3
 DoubleOrHalveSelectedStats:: ; 0F:6FF3
 	dr $3EFF3, $3F204
 InitBattle:: ; 0F:7204
@@ -930,11 +933,58 @@ PredefShakeScreenHorizontally:: ; 12:4129
 	dr $48129, $4000 * $13
 
 SECTION "bank13",ROMX,BANK[$13]
-INCBIN "baserom.gbc", $4000 * $13, $3DA1
 
-_GivePokemon:: ; 13:7DA1
-	dr $4FDA1, $4FEA5
+TrainerPics::
+YoungsterPic::     INCBIN "pic/trainer/youngster.pic"
+BugCatcherPic::    INCBIN "pic/trainer/bugcatcher.pic"
+LassPic::          INCBIN "pic/trainer/lass.pic"
+SailorPic::        INCBIN "pic/trainer/sailor.pic"
+JrTrainerMPic::    INCBIN "pic/trainer/jr.trainerm.pic"
+JrTrainerFPic::    INCBIN "pic/trainer/jr.trainerf.pic"
+PokemaniacPic::    INCBIN "pic/trainer/pokemaniac.pic"
+SuperNerdPic::     INCBIN "pic/trainer/supernerd.pic"
+HikerPic::         INCBIN "pic/trainer/hiker.pic"
+BikerPic::         INCBIN "pic/trainer/biker.pic"
+BurglarPic::       INCBIN "pic/trainer/burglar.pic"
+EngineerPic::      INCBIN "pic/trainer/engineer.pic"
+FisherPic::        INCBIN "pic/trainer/fisher.pic"
+SwimmerPic::       INCBIN "pic/trainer/swimmer.pic"
+CueBallPic::       INCBIN "pic/trainer/cueball.pic"
+GamblerPic::       INCBIN "pic/trainer/gambler.pic"
+BeautyPic::        INCBIN "pic/trainer/beauty.pic"
+PsychicPic::       INCBIN "pic/trainer/psychic.pic"
+RockerPic::        INCBIN "pic/trainer/rocker.pic"
+JugglerPic::       INCBIN "pic/trainer/juggler.pic"
+TamerPic::         INCBIN "pic/trainer/tamer.pic"
+BirdKeeperPic::    INCBIN "pic/trainer/birdkeeper.pic"
+BlackbeltPic::     INCBIN "pic/trainer/blackbelt.pic"
+Rival1Pic::        INCBIN "pic/trainer/rival1.pic"
+ProfOakPic::       INCBIN "pic/trainer/prof.oak.pic"
+ChiefPic::
+ScientistPic::     INCBIN "pic/trainer/scientist.pic"
+GiovanniPic::      INCBIN "pic/trainer/giovanni.pic"
+RocketPic::        INCBIN "pic/trainer/rocket.pic"
+CooltrainerMPic::  INCBIN "pic/trainer/cooltrainerm.pic"
+CooltrainerFPic::  INCBIN "pic/trainer/cooltrainerf.pic"
+BrunoPic::         INCBIN "pic/trainer/bruno.pic"
+BrockPic::         INCBIN "pic/trainer/brock.pic"
+MistyPic::         INCBIN "pic/trainer/misty.pic"
+LtSurgePic::       INCBIN "pic/trainer/lt.surge.pic"
+ErikaPic::         INCBIN "pic/trainer/erika.pic"
+KogaPic::          INCBIN "pic/trainer/koga.pic"
+BlainePic::        INCBIN "pic/trainer/blaine.pic"
+SabrinaPic::       INCBIN "pic/trainer/sabrina.pic"
+GentlemanPic::     INCBIN "pic/trainer/gentleman.pic"
+Rival2Pic::        INCBIN "pic/trainer/rival2.pic"
+Rival3Pic::        INCBIN "pic/trainer/rival3.pic"
+LoreleiPic::       INCBIN "pic/trainer/lorelei.pic"
+ChannelerPic::     INCBIN "pic/trainer/channeler.pic"
+AgathaPic::        INCBIN "pic/trainer/agatha.pic"
+LancePic::         INCBIN "pic/trainer/lance.pic"
 
+	dr $4FD04, $4FDA1
+
+INCLUDE "engine/give_pokemon.asm"
 INCLUDE "engine/predefs.asm"
 
 	dr $4FFFE, $4000 * $14

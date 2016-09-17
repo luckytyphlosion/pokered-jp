@@ -18,19 +18,10 @@ _GivePokemon:
 	callab LoadEnemyMonData
 	call SetPokedexOwnedFlag
 	callab SendNewMonToBox
-	ld hl, wcf4b
 	ld a, [wCurrentBoxNum]
 	and $7f
-	cp 9
-	jr c, .singleDigitBoxNum
-	sub 9
-	ld [hl], "1"
-	inc hl
-	add "0"
-	jr .next
-.singleDigitBoxNum
 	add "1"
-.next
+	ld hl, wcf4b
 	ld [hli], a
 	ld [hl], "@"
 	ld hl, SetToBoxText
@@ -69,14 +60,27 @@ SetPokedexOwnedFlag:
 	jp PrintText
 
 GotMonText:
-	TX_FAR _GotMonText
+	text "<PLAYER>は"
+	line "@"
+	TX_RAM wcd6d
+	text "を　てにいれた！@"
 	TX_SFX_ITEM_1
 	db "@"
 
 SetToBoxText:
-	TX_FAR _SetToBoxText
-	db "@"
+	text "<PKMN>を　もちきれないので"
+	line "<PC>の　ボックス@"
+	TX_RAM wcf4b
+	text "　に"
+	cont "@"
+	TX_RAM wBoxMonNicks
+	text "を　てんそうした！"
+	done
 
 BoxIsFullText:
-	TX_FAR _BoxIsFullText
-	db "@"
+	text "<PKMN>を　もちきれません！"
+	para "ボックスも　いっぱいで"
+	line "てんそうできません！"
+	para "<PKMN>センターなどで"
+	line "ボックスを　かえてきて　ください"
+	done
