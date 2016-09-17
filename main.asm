@@ -856,8 +856,10 @@ CryData:: ; 0E:541E
 	dr $3941E, $39C31
 TrainerPicAndMoneyPointers:: ; 0E:5C31
 	dr $39C31, $39D1C
-TrainerNames:: ; 0E:5D1C
-	dr $39D1C, $3AD11
+
+INCLUDE "text/trainer_names.asm"
+
+	dr $39E5F, $3AD11
 PokeballTileGraphics:: ; 0E:6D11
 	dr $3AD11, $3B0AF
 EvolutionAfterBattle:: ; 0E:70AF
