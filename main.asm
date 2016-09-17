@@ -15,7 +15,10 @@ PICS_5 EQU $D
 INCLUDE "home.asm"
 
 SECTION "bank1",ROMX,BANK[$1]
-	dr $4000, $421C
+	dr $4000, $4200
+
+MewBaseStats:: ; 01:4200
+	dr $4200, $421C
 
 ItemPrices:: ; 01:421C
 	dr $421C, $433F
@@ -76,7 +79,15 @@ CableClubNPC:: ; 01:736B
 ResetStatusAndHalveMoneyOnBlackout:: ; 01:755F
 	dr $755F, $75C1
 LoadMonData_:: ; 01:75C1
-	dr $75C1, $8000
+	dr $75C1, $766C
+DisplayTextBoxID_:: ; 01:766C
+	dr $766C, $7BF8
+PlayerPC:: ; 01:7BF8
+	dr $7BF8, $7F19
+_RemovePokemon:: ; 01:7F19
+	dr $7F19, $7FC9
+_DisplayPokedex:: ; 01:7FC9
+	dr $7FC9, $8000
 
 SECTION "bank2",ROMX,BANK[$2]
 INCLUDE "audio/engine_1.asm"
@@ -333,7 +344,13 @@ ApplyOutOfBattlePoisonDamage:: ; 03:4CD5
 LoadTilesetHeader:: ; 03:4D8D
 	dr $CD8D, $CF2E
 LoadWildData:: ; 03:4F2E
-	dr $CF2E, $ED0E
+	dr $CF2E, $D63D
+UseItem_:: ; 03:563D
+	dr $D63D, $E9C4
+TossItem_:: ; 03:69C4
+	dr $E9C4, $EA6F
+IsKeyItem_:: ; 03:6A6F
+	dr $EA6F, $ED0E
 DrawBadges:: ; 03:6D0E
 	dr $ED0E, $F1A9
 ReplaceTileBlock:: ; 03:71A9
@@ -359,7 +376,11 @@ DoBoulderDustAnimation:: ; 03:75E7
 _AddPartyMon:: ; 03:7617
 	dr $F617, $F7A9
 LoadMovePPs:: ; 03:77A9
-	dr $F7A9, $F99C
+	dr $F7A9, $F7D3
+_AddEnemyMonToPlayerParty:: ; 03:77D3
+	dr $F7D3, $F854
+_MoveMon:: ; 03:7854
+	dr $F854, $F99C
 FlagActionPredef:: ; 03:799C
 	dr $F99C, $F9DB
 HealParty:: ; 03:79DB
@@ -393,11 +414,27 @@ HPBarLength:: ; 03:7D1B
 UpdateHPBar:: ; 03:7D5E
 	dr $FD5E, $FD5E
 UpdateHPBar2:: ; 03:7D5E
-	dr $FD5E, $4000 * $4
+	dr $FD5E, $FE8A
+PrintBookshelfText:: ; 03:7E8A
+	dr $FE8A, $4000 * $4
 
 SECTION "bank4",ROMX,BANK[$4]
 MoveNames:: ; 04:4000
-	dr $10000, $11AD7
+	dr $10000, $10B19
+FontGraphics:: ; 04:4B19
+	dr $10B19, $10F19
+FontGraphicsEnd:: ; 04:4F19
+	dr $10F19, $10F39
+HpBarAndStatusGraphics:: ; 04:4F39
+	dr $10F39, $11119
+HpBarAndStatusGraphicsEnd:: ; 04:5119
+	dr $11119, $112F1
+TextBoxGraphics:: ; 04:52F1
+	dr $112F1, $114F1
+TextBoxGraphicsEnd:: ; 04:54F1
+	dr $114F1, $11941
+RedPicFront:: ; 04:5941
+	dr $11941, $11AD7
 UpdateSpriteFacingOffsetAndDelayMovement:: ; 04:5AD7
 	dr $11AD7, $11AF8
 StartMenu_Pokedex:: ; 04:5AF8
@@ -431,7 +468,11 @@ StatusScreen2:: ; 04:7896
 DrawPartyMenu_:: ; 04:7A0C
 	dr $13A0C, $13A1D
 RedrawPartyMenu_:: ; 04:7A1D
-	dr $13A1D, $4000 * $5
+	dr $13A1D, $13FB3
+GetTrainerName_:: ; 04:7FB3
+	dr $13FB3, $13FEA
+Random_:: ; 04:7FEA
+	dr $13FEA, $4000 * $5
 
 SECTION "bank5",ROMX,BANK[$5]
 RedCyclingSprite:     INCBIN "gfx/sprites/cycling.2bpp"
@@ -479,7 +520,10 @@ InitMapSprites:: ; 05:7840
 	dr $17840, $17C47
 
 EmotionBubble:: ; 05:7C47
-	dr $17C47, $4000 * $6
+	dr $17C47, $17E34
+
+ActivatePC:: ; 05:7E34
+	dr $17E34, $4000 * $6
 
 SECTION "bank6",ROMX,BANK[$6]
 INCBIN "baserom.gbc", $4000 * $6, $DEE
@@ -489,7 +533,15 @@ TrackPlayTime:: ; 06:4DEE
 PlayerStepOutFromDoor:: ; 06:7C98
 	dr $1BC98, $1BCD5
 _EndNPCMovementScript:: ; 06:7CD5
-	dr $1BCD5, $1BF2A
+	dr $1BCD5, $1BCFA
+PalletMovementScriptPointerTable:: ; 06:7CFA
+	dr $1BCFA, $1BDC8
+PewterMuseumGuyMovementScriptPointerTable:: ; 06:7DC8
+	dr $1BDC8, $1BE35
+PewterGymGuyMovementScriptPointerTable:: ; 06:7E35
+	dr $1BE35, $1BE9F
+FreezeEnemyTrainerSprite:: ; 06:7E9F
+	dr $1BE9F, $1BF2A
 HandleLedges:: ; 06:7F2A
 	dr $1BF2A, $4000 * $7
 
@@ -503,7 +555,9 @@ SafariZoneCheck:: ; 07:7A34
 SafariZoneCheckSteps:: ; 07:7A43
 	dr $1FA43, $1FA99
 PrintSafariGameOverText:: ; 07:7A99
-	dr $1FA99, $4000 * $8
+	dr $1FA99, $1FD15
+UpdateCinnabarGymGateTileBlocks_:: ; 07:7D15
+	dr $1FD15, $4000 * $8
 
 SECTION "bank8",ROMX,BANK[$8]
 
@@ -749,8 +803,9 @@ INCBIN "baserom.gbc", $4000 * $9, $3DF4
 PrintMonType:: ; 09:7DF4
 	dr $27DF4, $27E24
 PrintMoveType:: ; 09:7E24
-	dr $27E24, $4000 * $A
-
+	dr $27E24, $27EB2
+SaveTrainerName:: ; 09:7EB2
+	dr $27EB2, $4000 * $A
 SECTION "bankA",ROMX,BANK[$A]
 INCBIN "baserom.gbc", $4000 * $A, $4000
 
@@ -767,15 +822,21 @@ SECTION "bankD",ROMX,BANK[$D]
 INCBIN "baserom.gbc", $4000 * $D, $3DD3
 
 PewterGuys:: ; 0D:7DD3
-	dr $37DD3, $4000 * $E
+	dr $37DD3, $37E73
+_Multiply:: ; 0D:7E73
+	dr $37E73, $37ED7
+_Divide:: ; 0D:7ED7
+	dr $37ED7, $4000 * $E
 
 SECTION "bankE",ROMX,BANK[$E]
-INCBIN "baserom.gbc", $4000 * $E, $1068
-
+BaseStats:: ; 0E:4000
+	dr $38000, $39068
 MonsterNames:: ; 0E:5068
 	dr $39068, $3941E
 CryData:: ; 0E:541E
-	dr $3941E, $39D1C
+	dr $3941E, $39C31
+TrainerPicAndMoneyPointers:: ; 0E:5C31
+	dr $39C31, $39D1C
 TrainerNames:: ; 0E:5D1C
 	dr $39D1C, $3AD11
 PokeballTileGraphics:: ; 0E:6D11
@@ -833,7 +894,9 @@ INCBIN "baserom.gbc", $4000 * $11, $28E
 DisplayDexRating:: ; 11:428E
 	dr $4428E, $457B0
 LoadSpinnerArrowTiles:: ; 11:57B0
-	dr $457B0, $4000 * $12
+	dr $457B0, $478C5
+CheckForHiddenObject:: ; 11:78C5
+	dr $478C5, $4000 * $12
 
 SECTION "bank12",ROMX,BANK[$12]
 INCBIN "baserom.gbc", $4000 * $12, $EB
@@ -846,18 +909,34 @@ PredefShakeScreenHorizontally:: ; 12:4129
 	dr $48129, $4000 * $13
 
 SECTION "bank13",ROMX,BANK[$13]
-INCBIN "baserom.gbc", $4000 * $13, $3EA5
+INCBIN "baserom.gbc", $4000 * $13, $3DA1
+
+_GivePokemon:: ; 13:7DA1
+	dr $4FDA1, $4FEA5
 
 INCLUDE "engine/predefs.asm"
 
 	dr $4FFFE, $4000 * $14
 
 SECTION "bank14",ROMX,BANK[$14]
-INCBIN "baserom.gbc", $4000 * $14, $4000
+	dr $50000, $53AB3
+
+CeladonPrizeMenu:: ; 14:7AB3
+	dr $53AB3, $4000 * $15
 
 SECTION "bank15",ROMX,BANK[$15]
-INCBIN "baserom.gbc", $4000 * $15, $3EB9
+	dr $4000 * $15, $57DA3
 
+_GetSpritePosition1:: ; 15:7DA3
+	dr $57DA3, $57DC3
+_GetSpritePosition2:: ; 15:7DC3
+	dr $57DC3, $57DE7
+_SetSpritePosition1:: ; 15:7DE7
+	dr $57DE7, $57E07
+_SetSpritePosition2:: ; 15:7E07
+	dr $57E07, $57E2B
+TrainerWalkUpToPlayer:: ; 15:7E2B
+	dr $57E2B, $57EB9
 TrainerEngage:: ; 15:7EB9
 	dr $57EB9, $4000 * $16
 
@@ -905,7 +984,11 @@ FlashScreen:: ; 1C:50C9
 LoadTownMap_Nest:: ; 1C:54CE
 	dr $714CE, $714FE
 LoadTownMap_Fly:: ; 1C:54FE
-	dr $714FE, $71F9D
+	dr $714FE, $71B8A
+TownMapSpriteBlinkingAnimation:: ; 1C:5B8A
+	dr $71B8A, $71BC3
+AnimatePartyMon:: ; 1C:5BC3
+	dr $71BC3, $71F9D
 DoInGameTradeDialogue:: ; 1C:5F9D
 	dr $71F9D, $723BF
 _RunPaletteCommand:: ; 1C:63BF
@@ -943,7 +1026,9 @@ GetMoveSoundB:: ; 1E:58A0
 CopyDownscaledMonTiles:: ; 1E:5AF1
 	dr $79AF1, $79E04
 CopyTileIDsFromList:: ; 1E:5E04
-	dr $79E04, $4000 * $1F
+	dr $79E04, $7BFB2
+GetMachinePrice:: ; 1E:7FB2
+	dr $7BFB2, $4000 * $1F
 
 SECTION "bank1F",ROMX,BANK[$1F]
 INCLUDE "audio/music/credits.asm"

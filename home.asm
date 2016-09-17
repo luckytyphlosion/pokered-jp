@@ -1661,41 +1661,1143 @@ PrintStatusConditionNotFainted:
 	ld [MBC1RomBank],a
 	ret
 
-PrintLevel:: ; 2F02
-	dr $2F02, $2FB1
+; function to print pokemon level, leaving off the ":L" if the level is at least 100
+; INPUT:
+; hl = destination address
+; [wLoadedMonLevel] = level
+PrintLevel::
+	ld a,$6e ; ":L" tile ID
+	ld [hli],a
+	ld c,2 ; number of digits
+	ld a,[wLoadedMonLevel] ; level
+	cp 100
+	jr c,PrintLevelCommon
+; if level at least 100, write over the ":L" tile
+	dec hl
+	inc c ; increment number of digits to 3
+	jr PrintLevelCommon
 
-GetPartyMonName:: ; 2FB1
-	dr $2FB1, $2FC4
+; prints the level without leaving off ":L" regardless of level
+; INPUT:
+; hl = destination address
+; [wLoadedMonLevel] = level
+PrintLevelFull::
+	ld a,$6e ; ":L" tile ID
+	ld [hli],a
+	ld c,3 ; number of digits
+	ld a,[wLoadedMonLevel] ; level
 
-PrintBCDNumber:: ; 2FC4
-	dr $2FC4, $3034
+PrintLevelCommon::
+	ld [wd11e],a
+	ld de,wd11e
+	ld b,LEFT_ALIGN | 1 ; 1 byte
+	jp PrintNumber
 
-LoadMonFrontSprite:: ; 3034
-	dr $3034, $3121
+GetwMoves::
+; Unused. Returns the move at index a from wMoves in a
+	ld hl,wMoves
+	ld c,a
+	ld b,0
+	add hl,bc
+	ld a,[hl]
+	ret
 
-IsKeyItem:: ; 3121
-	dr $3121, $3130
+GetMonHeader::
+	dr $2F2E, $2FAB
 
-DisplayTextBoxID:: ; 3130
-	dr $3130, $3145
+; copy party pokemon's name to wcd6d
+GetPartyMonName2::
+	ld a,[wWhichPokemon] ; index within party
+	ld hl,wPartyMonNicks
 
-IsPlayerCharacterBeingControlledByGame:: ; 3145
-	dr $3145, $3156
+; this is called more often
+GetPartyMonName::
+	push hl
+	push bc
+	call SkipFixedLengthTextEntries ; add NAME_LENGTH to hl, a times
+	ld de,wcd6d
+	push de
+	ld bc,NAME_LENGTH
+	call CopyData
+	pop de
+	pop bc
+	pop hl
+	ret
 
-RunNPCMovementScript:: ; 3156
-	dr $3156, $319F
+; function to print a BCD (Binary-coded decimal) number
+; de = address of BCD number
+; hl = destination address
+; c = flags and length
+; bit 7: if set, do not print leading zeroes
+;        if unset, print leading zeroes
+; bit 6: if set, left-align the string (do not pad empty digits with spaces)
+;        if unset, right-align the string
+; bits 0-4: length of BCD number in bytes
+; Note that bits 5 and 7 are modified during execution. The above reflects
+; their meaning at the beginning of the functions's execution.
+PrintBCDNumber::
+	ld b,c ; save flags in b
+	res 7,c
+	res 6,c
+.loop
+	ld a,[de]
+	swap a
+	call PrintBCDDigit ; print upper digit
+	ld a,[de]
+	call PrintBCDDigit ; print lower digit
+	inc de
+	dec c
+	jr nz,.loop
+	bit 7,b ; were any non-zero digits printed?
+	jr z,.done ; if so, we are done
+.numberEqualsZero ; if every digit of the BCD number is zero
+	bit 6,b ; left or right alignment?
+	jr nz,.skipRightAlignmentAdjustment
+	dec hl ; if the string is right-aligned, it needs to be moved back one space
+.skipRightAlignmentAdjustment
+	ld [hl],"0"
+	call PrintLetterDelay
+	inc hl
+.done
+	ret
 
-StoreTrainerHeaderPointer:: ; 319F
-	dr $319F, $34AA
+PrintBCDDigit::
+	and $f
+	and a
+	jr z,.zeroDigit
+	res 7,b ; unset 7 to indicate that a nonzero digit has been reached
+.outputDigit
+	add "0"
+	ld [hli],a
+	jp PrintLetterDelay
+.zeroDigit
+	bit 7,b ; either printing leading zeroes or already reached a nonzero digit?
+	jr z,.outputDigit ; if so, print a zero digit
+	bit 6,b ; left or right alignment?
+	ret nz
+	inc hl ; if right-aligned, "print" a space by advancing the pointer
+	ret
 
-FuncTX_ItemStoragePC:: ; 34AA
-	dr $34AA, $34B4
-FuncTX_BillsPC:: ; 34B4
-	dr $34B4, $34BE
-FuncTX_GameCornerPrizeMenu:: ; 34B4
-	dr $34BE, $34C9
-FuncTX_PokemonCenterPC:: ; 34C9
-	dr $34C9, $3606
+UncompressMonSprite::
+	dr $2FFD, $3034
+
+; de: destination location
+LoadMonFrontSprite::
+	push de
+	ld hl, wMonHFrontSprite - wMonHeader
+	call UncompressMonSprite
+	ld hl, wMonHSpriteDim
+	ld a, [hli]
+	ld c, a
+	pop de
+	; fall through
+
+; postprocesses uncompressed sprite chunks to a 2bpp sprite and loads it into video ram
+; calculates alignment parameters to place both sprite chunks in the center of the 7*7 tile sprite buffers
+; de: destination location
+; a,c:  sprite dimensions (in tiles of 8x8 each)
+LoadUncompressedSpriteData::
+	push de
+	and $f
+	ld [H_SPRITEWIDTH], a ; each byte contains 8 pixels (in 1bpp), so tiles=bytes for width
+	ld b, a
+	ld a, $7
+	sub b      ; 7-w
+	inc a      ; 8-w
+	srl a      ; (8-w)/2     ; horizontal center (in tiles, rounded up)
+	ld b, a
+	add a
+	add a
+	add a
+	sub b      ; 7*((8-w)/2) ; skip for horizontal center (in tiles)
+	ld [H_SPRITEOFFSET], a
+	ld a, c
+	swap a
+	and $f
+	ld b, a
+	add a
+	add a
+	add a     ; 8*tiles is height in bytes
+	ld [H_SPRITEHEIGHT], a
+	ld a, $7
+	sub b      ; 7-h         ; skip for vertical center (in tiles, relative to current column)
+	ld b, a
+	ld a, [H_SPRITEOFFSET]
+	add b     ; 7*((8-w)/2) + 7-h ; combined overall offset (in tiles)
+	add a
+	add a
+	add a     ; 8*(7*((8-w)/2) + 7-h) ; combined overall offset (in bytes)
+	ld [H_SPRITEOFFSET], a
+	xor a
+	ld [$4000], a
+	ld hl, sSpriteBuffer0
+	call ZeroSpriteBuffer   ; zero buffer 0
+	ld de, sSpriteBuffer1
+	ld hl, sSpriteBuffer0
+	call AlignSpriteDataCentered    ; copy and align buffer 1 to 0 (containing the MSB of the 2bpp sprite)
+	ld hl, sSpriteBuffer1
+	call ZeroSpriteBuffer   ; zero buffer 1
+	ld de, sSpriteBuffer2
+	ld hl, sSpriteBuffer1
+	call AlignSpriteDataCentered    ; copy and align buffer 2 to 1 (containing the LSB of the 2bpp sprite)
+	pop de
+	jp InterlaceMergeSpriteBuffers
+
+; copies and aligns the sprite data properly inside the sprite buffer
+; sprite buffers are 7*7 tiles in size, the loaded sprite is centered within this area
+AlignSpriteDataCentered::
+	ld a, [H_SPRITEOFFSET]
+	ld b, $0
+	ld c, a
+	add hl, bc
+	ld a, [H_SPRITEWIDTH]
+.columnLoop
+	push af
+	push hl
+	ld a, [H_SPRITEHEIGHT]
+	ld c, a
+.columnInnerLoop
+	ld a, [de]
+	inc de
+	ld [hli], a
+	dec c
+	jr nz, .columnInnerLoop
+	pop hl
+	ld bc, 7*8    ; 7 tiles
+	add hl, bc    ; advance one full column
+	pop af
+	dec a
+	jr nz, .columnLoop
+	ret
+
+; fills the sprite buffer (pointed to in hl) with zeros
+ZeroSpriteBuffer::
+	ld bc, SPRITEBUFFERSIZE
+.nextByteLoop
+	xor a
+	ld [hli], a
+	dec bc
+	ld a, b
+	or c
+	jr nz, .nextByteLoop
+	ret
+
+; combines the (7*7 tiles, 1bpp) sprite chunks in buffer 0 and 1 into a 2bpp sprite located in buffer 1 through 2
+; in the resulting sprite, the rows of the two source sprites are interlaced
+; de: output address
+InterlaceMergeSpriteBuffers::
+	xor a
+	ld [$4000], a
+	push de
+	ld hl, sSpriteBuffer2 + (SPRITEBUFFERSIZE - 1) ; destination: end of buffer 2
+	ld de, sSpriteBuffer1 + (SPRITEBUFFERSIZE - 1) ; source 2: end of buffer 1
+	ld bc, sSpriteBuffer0 + (SPRITEBUFFERSIZE - 1) ; source 1: end of buffer 0
+	ld a, SPRITEBUFFERSIZE/2 ; $c4
+	ld [H_SPRITEINTERLACECOUNTER], a
+.interlaceLoop
+	ld a, [de]
+	dec de
+	ld [hld], a   ; write byte of source 2
+	ld a, [bc]
+	dec bc
+	ld [hld], a   ; write byte of source 1
+	ld a, [de]
+	dec de
+	ld [hld], a   ; write byte of source 2
+	ld a, [bc]
+	dec bc
+	ld [hld], a   ; write byte of source 1
+	ld a, [H_SPRITEINTERLACECOUNTER]
+	dec a
+	ld [H_SPRITEINTERLACECOUNTER], a
+	jr nz, .interlaceLoop
+	ld a, [wSpriteFlipped]
+	and a
+	jr z, .notFlipped
+	ld bc, 2*SPRITEBUFFERSIZE
+	ld hl, sSpriteBuffer1
+.swapLoop
+	swap [hl]    ; if flipped swap nybbles in all bytes
+	inc hl
+	dec bc
+	ld a, b
+	or c
+	jr nz, .swapLoop
+.notFlipped
+	pop hl
+	ld de, sSpriteBuffer1
+	ld c, (2*SPRITEBUFFERSIZE)/16 ; $31, number of 16 byte chunks to be copied
+	ld a, [H_LOADEDROMBANK]
+	ld b, a
+	jp CopyVideoData
+
+; causes the text box to close without waiting for a button press after displaying text
+DisableWaitingAfterTextDisplay::
+	ld a,$01
+	ld [wDoNotWaitForButtonPressAfterDisplayingText],a
+	ret
+
+; uses an item
+; UseItem is used with dummy items to perform certain other functions as well
+; INPUT:
+; [wcf91] = item ID
+; OUTPUT:
+; [wActionResultOrTookBattleTurn] = success
+; 00: unsucessful
+; 01: successful
+; 02: not able to be used right now, no extra menu displayed (only certain items use this)
+UseItem::
+	jpba UseItem_
+
+; confirms the item toss and then tosses the item
+; INPUT:
+; hl = address of inventory (either wNumBagItems or wNumBoxItems)
+; [wcf91] = item ID
+; [wWhichPokemon] = index of item within inventory
+; [wItemQuantity] = quantity to toss
+; OUTPUT:
+; clears carry flag if the item is tossed, sets carry flag if not
+TossItem::
+	ld a,[H_LOADEDROMBANK]
+	push af
+	ld a,BANK(TossItem_)
+	ld [H_LOADEDROMBANK],a
+	ld [MBC1RomBank],a
+	call TossItem_
+	pop de
+	ld a,d
+	ld [H_LOADEDROMBANK],a
+	ld [MBC1RomBank],a
+	ret
+
+; checks if an item is a key item
+; INPUT:
+; [wcf91] = item ID
+; OUTPUT:
+; [wIsKeyItem] = result
+; 00: item is not key item
+; 01: item is key item
+IsKeyItem::
+	push hl
+	push de
+	push bc
+	callba IsKeyItem_
+	pop bc
+	pop de
+	pop hl
+	ret
+
+; function to draw various text boxes
+; INPUT:
+; [wTextBoxID] = text box ID
+; b, c = y, x cursor position (TWO_OPTION_MENU only)
+DisplayTextBoxID::
+	ld a,[H_LOADEDROMBANK]
+	push af
+	ld a,BANK(DisplayTextBoxID_)
+	ld [H_LOADEDROMBANK],a
+	ld [MBC1RomBank],a
+	call DisplayTextBoxID_
+	pop bc
+	ld a,b
+	ld [H_LOADEDROMBANK],a
+	ld [MBC1RomBank],a
+	ret
+
+; not zero if an NPC movement script is running, the player character is
+; automatically stepping down from a door, or joypad states are being simulated
+IsPlayerCharacterBeingControlledByGame::
+	ld a, [wNPCMovementScriptPointerTableNum]
+	and a
+	ret nz
+	ld a, [wd736]
+	bit 1, a ; currently stepping down from door bit
+	ret nz
+	ld a, [wd730]
+	and $80
+	ret
+
+RunNPCMovementScript::
+	ld hl, wd736
+	bit 0, [hl]
+	res 0, [hl]
+	jr nz, .playerStepOutFromDoor
+	ld a, [wNPCMovementScriptPointerTableNum]
+	and a
+	ret z
+	dec a
+	add a
+	ld d, 0
+	ld e, a
+	ld hl, .NPCMovementScriptPointerTables
+	add hl, de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld a, [H_LOADEDROMBANK]
+	push af
+	ld a, [wNPCMovementScriptBank]
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	ld a, [wNPCMovementScriptFunctionNum]
+	call CallFunctionInTable
+	pop af
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	ret
+
+.NPCMovementScriptPointerTables
+	dw PalletMovementScriptPointerTable
+	dw PewterMuseumGuyMovementScriptPointerTable
+	dw PewterGymGuyMovementScriptPointerTable
+.playerStepOutFromDoor
+	jpba PlayerStepOutFromDoor
+
+EndNPCMovementScript::
+	jpba _EndNPCMovementScript
+
+EmptyFunc2::
+	ret
+
+; stores hl in [wTrainerHeaderPtr]
+StoreTrainerHeaderPointer::
+	ld a, h
+	ld [wTrainerHeaderPtr], a
+	ld a, l
+	ld [wTrainerHeaderPtr+1], a
+	ret
+
+; executes the current map script from the function pointer array provided in hl.
+; a: map script index to execute (unless overridden by [wd733] bit 4)
+ExecuteCurMapScriptInTable::
+	push af
+	push de
+	call StoreTrainerHeaderPointer
+	pop hl
+	pop af
+	push hl
+	ld hl, wFlags_D733
+	bit 4, [hl]
+	res 4, [hl]
+	jr z, .useProvidedIndex   ; test if map script index was overridden manually
+	ld a, [wCurMapScript]
+.useProvidedIndex
+	pop hl
+	ld [wCurMapScript], a
+	call CallFunctionInTable
+	ld a, [wCurMapScript]
+	ret
+
+LoadGymLeaderAndCityName::
+	push de
+	ld de, wGymCityName
+	ld bc, $5
+	call CopyData   ; load city name
+	pop hl
+	ld de, wGymLeaderName
+	ld bc, NAME_LENGTH
+	jp CopyData     ; load gym leader name
+
+; reads specific information from trainer header (pointed to at wTrainerHeaderPtr)
+; a: offset in header data
+;    0 -> flag's bit (into wTrainerHeaderFlagBit)
+;    2 -> flag's byte ptr (into hl)
+;    4 -> before battle text (into hl)
+;    6 -> after battle text (into hl)
+;    8 -> end battle text (into hl)
+ReadTrainerHeaderInfo::
+	push de
+	push af
+	ld d, $0
+	ld e, a
+	ld hl, wTrainerHeaderPtr
+	ld a, [hli]
+	ld l, [hl]
+	ld h, a
+	add hl, de
+	pop af
+	and a
+	jr nz, .nonZeroOffset
+	ld a, [hl]
+	ld [wTrainerHeaderFlagBit], a  ; store flag's bit
+	jr .done
+.nonZeroOffset
+	cp $2
+	jr z, .readPointer ; read flag's byte ptr
+	cp $4
+	jr z, .readPointer ; read before battle text
+	cp $6
+	jr z, .readPointer ; read after battle text
+	cp $8
+	jr z, .readPointer ; read end battle text
+	cp $a
+	jr nz, .done
+	ld a, [hli]        ; read end battle text (2) but override the result afterwards (XXX why, bug?)
+	ld d, [hl]
+	ld e, a
+	jr .done
+.readPointer
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+.done
+	pop de
+	ret
+
+TrainerFlagAction::
+	predef_jump FlagActionPredef
+
+TalkToTrainer::
+	call StoreTrainerHeaderPointer
+	xor a
+	call ReadTrainerHeaderInfo     ; read flag's bit
+	ld a, $2
+	call ReadTrainerHeaderInfo     ; read flag's byte ptr
+	ld a, [wTrainerHeaderFlagBit]
+	ld c, a
+	ld b, FLAG_TEST
+	call TrainerFlagAction      ; read trainer's flag
+	ld a, c
+	and a
+	jr z, .trainerNotYetFought     ; test trainer's flag
+	ld a, $6
+	call ReadTrainerHeaderInfo     ; print after battle text
+	jp PrintText
+.trainerNotYetFought
+	ld a, $4
+	call ReadTrainerHeaderInfo     ; print before battle text
+	call PrintText
+	ld a, $a
+	call ReadTrainerHeaderInfo     ; (?) does nothing apparently (maybe bug in ReadTrainerHeaderInfo)
+	push de
+	ld a, $8
+	call ReadTrainerHeaderInfo     ; read end battle text
+	pop de
+	call SaveEndBattleTextPointers
+	ld hl, wFlags_D733
+	set 4, [hl]                    ; activate map script index override (index is set below)
+	ld hl, wFlags_0xcd60
+	bit 0, [hl]                    ; test if player is already engaging the trainer (because the trainer saw the player)
+	ret nz
+; if the player talked to the trainer of his own volition
+	call EngageMapTrainer
+	ld hl, wCurMapScript
+	inc [hl]      ; increment map script index before StartTrainerBattle increments it again (next script function is usually EndTrainerBattle)
+	jp StartTrainerBattle
+
+; checks if any trainers are seeing the player and wanting to fight
+CheckFightingMapTrainers::
+	call CheckForEngagingTrainers
+	ld a, [wSpriteIndex]
+	cp $ff
+	jr nz, .trainerEngaging
+	xor a
+	ld [wSpriteIndex], a
+	ld [wTrainerHeaderFlagBit], a
+	ret
+.trainerEngaging
+	ld hl, wFlags_D733
+	set 3, [hl]
+	ld [wEmotionBubbleSpriteIndex], a
+	xor a ; EXCLAMATION_BUBBLE
+	ld [wWhichEmotionBubble], a
+	predef EmotionBubble
+	ld a, D_RIGHT | D_LEFT | D_UP | D_DOWN
+	ld [wJoyIgnore], a
+	xor a
+	ld [hJoyHeld], a
+	call TrainerWalkUpToPlayer_Bank0
+	ld hl, wCurMapScript
+	inc [hl]      ; increment map script index (next script function is usually DisplayEnemyTrainerTextAndStartBattle)
+	ret
+
+; display the before battle text after the enemy trainer has walked up to the player's sprite
+DisplayEnemyTrainerTextAndStartBattle::
+	ld a, [wd730]
+	and $1
+	ret nz ; return if the enemy trainer hasn't finished walking to the player's sprite
+	ld [wJoyIgnore], a
+	ld a, [wSpriteIndex]
+	ld [hSpriteIndexOrTextID], a
+	call DisplayTextID
+	; fall through
+
+StartTrainerBattle::
+	xor a
+	ld [wJoyIgnore], a
+	call InitBattleEnemyParameters
+	ld hl, wd72d
+	set 6, [hl]
+	set 7, [hl]
+	ld hl, wd72e
+	set 1, [hl]
+	ld hl, wCurMapScript
+	inc [hl]        ; increment map script index (next script function is usually EndTrainerBattle)
+	ret
+
+EndTrainerBattle::
+	ld hl, wCurrentMapScriptFlags
+	set 5, [hl]
+	set 6, [hl]
+	ld hl, wd72d
+	res 7, [hl]
+	ld hl, wFlags_0xcd60
+	res 0, [hl]                  ; player is no longer engaged by any trainer
+	ld a, [wIsInBattle]
+	cp $ff
+	jp z, ResetButtonPressedAndMapScript
+	ld a, $2
+	call ReadTrainerHeaderInfo
+	ld a, [wTrainerHeaderFlagBit]
+	ld c, a
+	ld b, FLAG_SET
+	call TrainerFlagAction   ; flag trainer as fought
+	ld a, [wEnemyMonOrTrainerClass]
+	cp 200
+	jr nc, .skipRemoveSprite    ; test if trainer was fought (in that case skip removing the corresponding sprite)
+	ld hl, wMissableObjectList
+	ld de, $2
+	ld a, [wSpriteIndex]
+	call IsInArray              ; search for sprite ID
+	inc hl
+	ld a, [hl]
+	ld [wMissableObjectIndex], a               ; load corresponding missable object index and remove it
+	predef HideObject
+.skipRemoveSprite
+	ld hl, wd730
+	bit 4, [hl]
+	res 4, [hl]
+	ret nz
+
+ResetButtonPressedAndMapScript::
+	xor a
+	ld [wJoyIgnore], a
+	ld [hJoyHeld], a
+	ld [hJoyPressed], a
+	ld [hJoyReleased], a
+	ld [wCurMapScript], a               ; reset battle status
+	ret
+
+; calls TrainerWalkUpToPlayer
+TrainerWalkUpToPlayer_Bank0::
+	jpba TrainerWalkUpToPlayer
+
+; sets opponent type and mon set/lvl based on the engaging trainer data
+InitBattleEnemyParameters::
+	ld a, [wEngagedTrainerClass]
+	ld [wCurOpponent], a
+	ld [wEnemyMonOrTrainerClass], a
+	cp 200
+	ld a, [wEngagedTrainerSet]
+	jr c, .noTrainer
+	ld [wTrainerNo], a
+	ret
+.noTrainer
+	ld [wCurEnemyLVL], a
+	ret
+
+GetSpritePosition1::
+	ld hl, _GetSpritePosition1
+	jr SpritePositionBankswitch
+
+GetSpritePosition2::
+	ld hl, _GetSpritePosition2
+	jr SpritePositionBankswitch
+
+SetSpritePosition1::
+	ld hl, _SetSpritePosition1
+	jr SpritePositionBankswitch
+
+SetSpritePosition2::
+	ld hl, _SetSpritePosition2
+SpritePositionBankswitch::
+	ld b, BANK(_GetSpritePosition1) ; BANK(_GetSpritePosition2), BANK(_SetSpritePosition1), BANK(_SetSpritePosition2)
+	jp Bankswitch ; indirect jump to one of the four functions
+
+CheckForEngagingTrainers::
+	xor a
+	call ReadTrainerHeaderInfo       ; read trainer flag's bit (unused)
+	ld d, h                          ; store trainer header address in de
+	ld e, l
+.trainerLoop
+	call StoreTrainerHeaderPointer   ; set trainer header pointer to current trainer
+	ld a, [de]
+	ld [wSpriteIndex], a                     ; store trainer flag's bit
+	ld [wTrainerHeaderFlagBit], a
+	cp $ff
+	ret z
+	ld a, $2
+	call ReadTrainerHeaderInfo       ; read trainer flag's byte ptr
+	ld b, FLAG_TEST
+	ld a, [wTrainerHeaderFlagBit]
+	ld c, a
+	call TrainerFlagAction        ; read trainer flag
+	ld a, c
+	and a ; has the trainer already been defeated?
+	jr nz, .continue
+	push hl
+	push de
+	push hl
+	xor a
+	call ReadTrainerHeaderInfo       ; get trainer header pointer
+	inc hl
+	ld a, [hl]                       ; read trainer engage distance
+	pop hl
+	ld [wTrainerEngageDistance], a
+	ld a, [wSpriteIndex]
+	swap a
+	ld [wTrainerSpriteOffset], a
+	predef TrainerEngage
+	pop de
+	pop hl
+	ld a, [wTrainerSpriteOffset]
+	and a
+	ret nz        ; break if the trainer is engaging
+.continue
+	ld hl, $c
+	add hl, de
+	ld d, h
+	ld e, l
+	jr .trainerLoop
+
+; hl = text if the player wins
+; de = text if the player loses
+SaveEndBattleTextPointers::
+	ld a, [H_LOADEDROMBANK]
+	ld [wEndBattleTextRomBank], a
+	ld a, h
+	ld [wEndBattleWinTextPointer], a
+	ld a, l
+	ld [wEndBattleWinTextPointer + 1], a
+	ld a, d
+	ld [wEndBattleLoseTextPointer], a
+	ld a, e
+	ld [wEndBattleLoseTextPointer + 1], a
+	ret
+
+; loads data of some trainer on the current map and plays pre-battle music
+; [wSpriteIndex]: sprite ID of trainer who is engaged
+EngageMapTrainer::
+	ld hl, wMapSpriteExtraData
+	ld d, $0
+	ld a, [wSpriteIndex]
+	dec a
+	add a
+	ld e, a
+	add hl, de     ; seek to engaged trainer data
+	ld a, [hli]    ; load trainer class
+	ld [wEngagedTrainerClass], a
+	ld a, [hl]     ; load trainer mon set
+	ld [wEnemyMonAttackMod], a
+	jp PlayTrainerMusic
+
+PrintEndBattleText::
+	push hl
+	ld hl, wd72d
+	bit 7, [hl]
+	res 7, [hl]
+	pop hl
+	ret z
+	ld a, [H_LOADEDROMBANK]
+	push af
+	ld a, [wEndBattleTextRomBank]
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	push hl
+	callba SaveTrainerName
+	ld hl, TrainerEndBattleText
+	call PrintText
+	pop hl
+	pop af
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	callba FreezeEnemyTrainerSprite
+	jp WaitForSoundToFinish
+
+GetSavedEndBattleTextPointer::
+	ld a, [wBattleResult]
+	and a
+; won battle
+	jr nz, .lostBattle
+	ld a, [wEndBattleWinTextPointer]
+	ld h, a
+	ld a, [wEndBattleWinTextPointer + 1]
+	ld l, a
+	ret
+.lostBattle
+	ld a, [wEndBattleLoseTextPointer]
+	ld h, a
+	ld a, [wEndBattleLoseTextPointer + 1]
+	ld l, a
+	ret
+
+TrainerEndBattleText::
+	TX_RAM wcd6d
+	text "『@"
+	TX_ASM
+	call GetSavedEndBattleTextPointer
+	call TextCommandProcessor
+	jp TextScriptEnd
+
+; only engage withe trainer if the player is not already
+; engaged with another trainer
+; XXX unused?
+CheckIfAlreadyEngaged::
+	ld a, [wFlags_0xcd60]
+	bit 0, a
+	ret nz
+	call EngageMapTrainer
+	xor a
+	ret
+
+PlayTrainerMusic::
+	ld a, [wEngagedTrainerClass]
+	cp OPP_SONY1
+	ret z
+	cp OPP_SONY2
+	ret z
+	cp OPP_SONY3
+	ret z
+	ld a, [wGymLeaderNo]
+	and a
+	ret nz
+	xor a
+	ld [wAudioFadeOutControl], a
+	ld a, $ff
+	call PlaySound
+	ld a, BANK(Music_MeetEvilTrainer)
+	ld [wAudioROMBank], a
+	ld [wAudioSavedROMBank], a
+	ld a, [wEngagedTrainerClass]
+	ld b, a
+	ld hl, EvilTrainerList
+.evilTrainerListLoop
+	ld a, [hli]
+	cp $ff
+	jr z, .noEvilTrainer
+	cp b
+	jr nz, .evilTrainerListLoop
+	ld a, MUSIC_MEET_EVIL_TRAINER
+	jr .PlaySound
+.noEvilTrainer
+	ld hl, FemaleTrainerList
+.femaleTrainerListLoop
+	ld a, [hli]
+	cp $ff
+	jr z, .maleTrainer
+	cp b
+	jr nz, .femaleTrainerListLoop
+	ld a, MUSIC_MEET_FEMALE_TRAINER
+	jr .PlaySound
+.maleTrainer
+	ld a, MUSIC_MEET_MALE_TRAINER
+.PlaySound
+	ld [wNewSoundID], a
+	jp PlaySound
+
+INCLUDE "data/trainer_types.asm"
+
+; checks if the player's coordinates match an arrow movement tile's coordinates
+; and if so, decodes the RLE movement data
+; b = player Y
+; c = player X
+DecodeArrowMovementRLE::
+	ld a, [hli]
+	cp $ff
+	ret z ; no match in the list
+	cp b
+	jr nz, .nextArrowMovementTileEntry1
+	ld a, [hli]
+	cp c
+	jr nz, .nextArrowMovementTileEntry2
+	ld a, [hli]
+	ld d, [hl]
+	ld e, a
+	ld hl, wSimulatedJoypadStatesEnd
+	call DecodeRLEList
+	dec a
+	ld [wSimulatedJoypadStatesIndex], a
+	ret
+.nextArrowMovementTileEntry1
+	inc hl
+.nextArrowMovementTileEntry2
+	inc hl
+	inc hl
+	jr DecodeArrowMovementRLE
+
+FuncTX_ItemStoragePC::
+	call SaveScreenTilesToBuffer2
+	ld b, BANK(PlayerPC)
+	ld hl, PlayerPC
+	jr bankswitchAndContinue
+
+FuncTX_BillsPC::
+	call SaveScreenTilesToBuffer2
+	ld b, BANK(BillsPC_)
+	ld hl, BillsPC_
+	jr bankswitchAndContinue
+
+FuncTX_GameCornerPrizeMenu::
+; XXX find a better name for this function
+; special_F7
+	ld b,BANK(CeladonPrizeMenu)
+	ld hl,CeladonPrizeMenu
+bankswitchAndContinue::
+	call Bankswitch
+	jp HoldTextDisplayOpen        ; continue to main text-engine function
+
+FuncTX_PokemonCenterPC::
+	ld b, BANK(ActivatePC)
+	ld hl, ActivatePC
+	jr bankswitchAndContinue
+
+StartSimulatingJoypadStates::
+	xor a
+	ld [wOverrideSimulatedJoypadStatesMask], a
+	ld [wSpriteStateData2 + $06], a ; player's sprite movement byte 1
+	ld hl, wd730
+	set 7, [hl]
+	ret
+
+IsItemInBag::
+; given an item_id in b
+; set zero flag if item isn't in player's bag
+; else reset zero flag
+; related to Pokémon Tower and ghosts
+	predef GetQuantityOfItemInBag
+	ld a,b
+	and a
+	ret
+
+DisplayPokedex::
+	ld [wd11e], a
+	jpba _DisplayPokedex
+
+SetSpriteFacingDirectionAndDelay::
+	call SetSpriteFacingDirection
+	ld c, 6
+	jp DelayFrames
+
+SetSpriteFacingDirection::
+	ld a, $9
+	ld [H_SPRITEDATAOFFSET], a
+	call GetPointerWithinSpriteStateData1
+	ld a, [hSpriteFacingDirection]
+	ld [hl], a
+	ret
+
+SetSpriteImageIndexAfterSettingFacingDirection::
+	ld de, -7
+	add hl, de
+	ld [hl], a
+	ret
+
+; tests if the player's coordinates are in a specified array
+; INPUT:
+; hl = address of array
+; OUTPUT:
+; [wCoordIndex] = if there is match, the matching array index
+; sets carry if the coordinates are in the array, clears carry if not
+ArePlayerCoordsInArray::
+	ld a,[wYCoord]
+	ld b,a
+	ld a,[wXCoord]
+	ld c,a
+	; fallthrough
+
+CheckCoords::
+	xor a
+	ld [wCoordIndex],a
+.loop
+	ld a,[hli]
+	cp $ff ; reached terminator?
+	jr z,.notInArray
+	push hl
+	ld hl,wCoordIndex
+	inc [hl]
+	pop hl
+.compareYCoord
+	cp b
+	jr z,.compareXCoord
+	inc hl
+	jr .loop
+.compareXCoord
+	ld a,[hli]
+	cp c
+	jr nz,.loop
+.inArray
+	scf
+	ret
+.notInArray
+	and a
+	ret
+
+; tests if a boulder's coordinates are in a specified array
+; INPUT:
+; hl = address of array
+; [H_SPRITEINDEX] = index of boulder sprite
+; OUTPUT:
+; [wCoordIndex] = if there is match, the matching array index
+; sets carry if the coordinates are in the array, clears carry if not
+CheckBoulderCoords::
+	push hl
+	ld hl, wSpriteStateData2 + $04
+	ld a, [H_SPRITEINDEX]
+	swap a
+	ld d, $0
+	ld e, a
+	add hl, de
+	ld a, [hli]
+	sub $4 ; because sprite coordinates are offset by 4
+	ld b, a
+	ld a, [hl]
+	sub $4 ; because sprite coordinates are offset by 4
+	ld c, a
+	pop hl
+	jp CheckCoords
+
+GetPointerWithinSpriteStateData1::
+	ld h, $c1
+	jr _GetPointerWithinSpriteStateData
+
+GetPointerWithinSpriteStateData2::
+	ld h, $c2
+
+_GetPointerWithinSpriteStateData:
+	ld a, [H_SPRITEDATAOFFSET]
+	ld b, a
+	ld a, [H_SPRITEINDEX]
+	swap a
+	add b
+	ld l, a
+	ret
+
+; decodes a $ff-terminated RLEncoded list
+; each entry is a pair of bytes <byte value> <repetitions>
+; the final $ff will be replicated in the output list and a contains the number of bytes written
+; de: input list
+; hl: output list
+DecodeRLEList::
+	xor a
+	ld [wRLEByteCount], a     ; count written bytes here
+.listLoop
+	ld a, [de]
+	cp $ff
+	jr z, .endOfList
+	ld [hRLEByteValue], a ; store byte value to be written
+	inc de
+	ld a, [de]
+	ld b, $0
+	ld c, a                      ; number of bytes to be written
+	ld a, [wRLEByteCount]
+	add c
+	ld [wRLEByteCount], a     ; update total number of written bytes
+	ld a, [hRLEByteValue]
+	call FillMemory              ; write a c-times to output
+	inc de
+	jr .listLoop
+.endOfList
+	ld a, $ff
+	ld [hl], a                   ; write final $ff
+	ld a, [wRLEByteCount]
+	inc a                        ; include sentinel in counting
+	ret
+
+; sets movement byte 1 for sprite [H_SPRITEINDEX] to $FE and byte 2 to [hSpriteMovementByte2]
+SetSpriteMovementBytesToFE::
+	push hl
+	call GetSpriteMovementByte1Pointer
+	ld [hl], $fe
+	call GetSpriteMovementByte2Pointer
+	ld a, [hSpriteMovementByte2]
+	ld [hl], a
+	pop hl
+	ret
+
+; sets both movement bytes for sprite [H_SPRITEINDEX] to $FF
+SetSpriteMovementBytesToFF::
+	push hl
+	call GetSpriteMovementByte1Pointer
+	ld [hl],$FF
+	call GetSpriteMovementByte2Pointer
+	ld [hl],$FF ; prevent person from walking?
+	pop hl
+	ret
+
+; returns the sprite movement byte 1 pointer for sprite [H_SPRITEINDEX] in hl
+GetSpriteMovementByte1Pointer::
+	ld h,$C2
+	ld a,[H_SPRITEINDEX]
+	swap a
+	add 6
+	ld l,a
+	ret
+
+; returns the sprite movement byte 2 pointer for sprite [H_SPRITEINDEX] in hl
+GetSpriteMovementByte2Pointer::
+	push de
+	ld hl,wMapSpriteData
+	ld a,[H_SPRITEINDEX]
+	dec a
+	add a
+	ld d,0
+	ld e,a
+	add hl,de
+	pop de
+	ret
+
+GetTrainerInformation::
+	call GetTrainerName
+	ld a, [wLinkState]
+	and a
+	jr nz, .linkBattle
+	ld a, Bank(TrainerPicAndMoneyPointers)
+	call BankswitchHome
+	ld a, [wTrainerClass]
+	dec a
+	ld hl, TrainerPicAndMoneyPointers
+	ld bc, $5
+	call AddNTimes
+	ld de, wTrainerPicPointer
+	ld a, [hli]
+	ld [de], a
+	inc de
+	ld a, [hli]
+	ld [de], a
+	ld de, wTrainerBaseMoney
+	ld a, [hli]
+	ld [de], a
+	inc de
+	ld a, [hli]
+	ld [de], a
+	jp BankswitchBack
+.linkBattle
+	ld hl, wTrainerPicPointer
+	ld de, RedPicFront
+	ld [hl], e
+	inc hl
+	ld [hl], d
+	ret
+
+GetTrainerName::
+	jpba GetTrainerName_
+
+HasEnoughMoney::
+; Check if the player has at least as much
+; money as the 3-byte BCD value at hMoney.
+	ld de, wPlayerMoney
+	ld hl, hMoney
+	ld c, 3
+	jp StringCmp
+
+HasEnoughCoins::
+; Check if the player has at least as many
+; coins as the 2-byte BCD value at hCoins.
+	ld de, wPlayerCoins
+	ld hl, hCoins
+	ld c, 2
+	jp StringCmp
+
 
 BankswitchHome::
 ; switches to bank # in a
@@ -1733,17 +2835,185 @@ Bankswitch::
 	ld [MBC1RomBank],a
 	ret
 
-YesNoChoice:: ; 3636
-	dr $3636, $36EA
+; displays yes/no choice
+; yes -> set carry
+YesNoChoice::
+	call SaveScreenTilesToBuffer1
+	call InitYesNoTextBoxParameters
+	jr DisplayYesNoChoice
 
-LoadTextBoxTilePatterns:: ; 36EA
-	dr $36EA, $370A
+Func_35f4::
+	ld a, TWO_OPTION_MENU
+	ld [wTextBoxID], a
+	call InitYesNoTextBoxParameters
+	jp DisplayTextBoxID
 
-LoadHpBarAndStatusTilePatterns:: ; 370A
-	dr $370A, $372A
+InitYesNoTextBoxParameters::
+	xor a ; YES_NO_MENU
+	ld [wTwoOptionMenuID], a
+	coord hl, 14, 7
+	ld bc, $80f
+	ret
 
-FillMemory:: ; 372A
-	dr $372A, $373E
+YesNoChoicePokeCenter::
+	call SaveScreenTilesToBuffer1
+	ld a, HEAL_CANCEL_MENU
+	ld [wTwoOptionMenuID], a
+	coord hl, 13, 6
+	lb bc, 8, 14
+	jr DisplayYesNoChoice
+
+WideYesNoChoice:: ; unused
+	call SaveScreenTilesToBuffer1
+	ld a, WIDE_YES_NO_MENU
+	ld [wTwoOptionMenuID], a
+	coord hl, 12, 7
+	lb bc, 8, 13
+
+DisplayYesNoChoice::
+	ld a, TWO_OPTION_MENU
+	ld [wTextBoxID], a
+	call DisplayTextBoxID
+	jp LoadScreenTilesFromBuffer1
+
+; calculates the difference |a-b|, setting carry flag if a<b
+CalcDifference::
+	sub b
+	ret nc
+	cpl
+	add $1
+	scf
+	ret
+
+MoveSprite::
+; move the sprite [H_SPRITEINDEX] with the movement pointed to by de
+; actually only copies the movement data to wNPCMovementDirections for later
+	call SetSpriteMovementBytesToFF
+MoveSprite_::
+	push hl
+	push bc
+	call GetSpriteMovementByte1Pointer
+	xor a
+	ld [hl],a
+	ld hl,wNPCMovementDirections
+	ld c,0
+
+.loop
+	ld a,[de]
+	ld [hli],a
+	inc de
+	inc c
+	cp $FF ; have we reached the end of the movement data?
+	jr nz,.loop
+
+	ld a,c
+	ld [wNPCNumScriptedSteps],a ; number of steps taken
+
+	pop bc
+	ld hl,wd730
+	set 0,[hl]
+	pop hl
+	xor a
+	ld [wOverrideSimulatedJoypadStatesMask],a
+	ld [wSimulatedJoypadStatesEnd],a
+	dec a
+	ld [wJoyIgnore],a
+	ld [wWastedByteCD3A],a
+	ret
+
+; divides [hDividend2] by [hDivisor2] and stores the quotient in [hQuotient2]
+DivideBytes::
+	push hl
+	ld hl, hQuotient2
+	xor a
+	ld [hld], a
+	ld a, [hld]
+	and a
+	jr z, .done
+	ld a, [hli]
+.loop
+	sub [hl]
+	jr c, .done
+	inc hl
+	inc [hl]
+	dec hl
+	jr .loop
+.done
+	pop hl
+	ret
+
+
+LoadFontTilePatterns::
+	ld a, [rLCDC]
+	bit 7, a ; is the LCD enabled?
+	jr nz, .on
+.off
+	ld hl, FontGraphics
+	ld de, vFont
+	ld bc, FontGraphicsEnd - FontGraphics
+	ld a, BANK(FontGraphics)
+	jp FarCopyDataDouble ; if LCD is off, transfer all at once
+.on
+	ld de, FontGraphics
+	ld hl, vFont
+	lb bc, BANK(FontGraphics), (FontGraphicsEnd - FontGraphics) / $8
+	jp CopyVideoDataDouble ; if LCD is on, transfer during V-blank
+
+LoadTextBoxTilePatterns::
+	ld a, [rLCDC]
+	bit 7, a ; is the LCD enabled?
+	jr nz, .on
+.off
+	ld hl, TextBoxGraphics
+	ld de, vChars2 + $600
+	ld bc, TextBoxGraphicsEnd - TextBoxGraphics
+	ld a, BANK(TextBoxGraphics)
+	jp FarCopyData2 ; if LCD is off, transfer all at once
+.on
+	ld de, TextBoxGraphics
+	ld hl, vChars2 + $600
+	lb bc, BANK(TextBoxGraphics), (TextBoxGraphicsEnd - TextBoxGraphics) / $10
+	jp CopyVideoData ; if LCD is on, transfer during V-blank
+
+LoadHpBarAndStatusTilePatterns::
+	ld a, [rLCDC]
+	bit 7, a ; is the LCD enabled?
+	jr nz, .on
+.off
+	ld hl, HpBarAndStatusGraphics
+	ld de, vChars2 + $620
+	ld bc, HpBarAndStatusGraphicsEnd - HpBarAndStatusGraphics
+	ld a, BANK(HpBarAndStatusGraphics)
+	jp FarCopyData2 ; if LCD is off, transfer all at once
+.on
+	ld de, HpBarAndStatusGraphics
+	ld hl, vChars2 + $620
+	lb bc, BANK(HpBarAndStatusGraphics), (HpBarAndStatusGraphicsEnd - HpBarAndStatusGraphics) / $10
+	jp CopyVideoData ; if LCD is on, transfer during V-blank
+
+
+FillMemory::
+; Fill bc bytes at hl with a.
+	push de
+	ld d, a
+.loop
+	ld a, d
+	ld [hli], a
+	dec bc
+	ld a, b
+	or c
+	jr nz, .loop
+	pop de
+	ret
+
+
+UncompressSpriteFromDE::
+; Decompress pic at a:de.
+	ld hl, wSpriteInputPtr
+	ld [hl], e
+	inc hl
+	ld [hl], d
+	jp UncompressSpriteData
 
 SaveScreenTilesToBuffer2::
 	coord hl, 0, 0
@@ -1910,46 +3180,823 @@ GetName::
 	ret
 
 GetItemPrice::
-	dr $3827, $386E
+; Stores item's price as BCD at hItemPrice (3 bytes)
+; Input: [wcf91] = item id
+	ld a, [H_LOADEDROMBANK]
+	push af
+	ld a, [wListMenuID]
+	cp MOVESLISTMENU
+	ld a, BANK(ItemPrices)
+	jr nz, .ok
+	ld a, $f ; hardcoded Bank
+.ok
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	ld hl, wItemPrices
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld a, [wcf91] ; a contains item id
+	cp HM_01
+	jr nc, .getTMPrice
+	ld bc, $3
+.loop
+	add hl, bc
+	dec a
+	jr nz, .loop
+	dec hl
+	ld a, [hld]
+	ld [hItemPrice + 2], a
+	ld a, [hld]
+	ld [hItemPrice + 1], a
+	ld a, [hl]
+	ld [hItemPrice], a
+	jr .done
+.getTMPrice
+	ld a, Bank(GetMachinePrice)
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	call GetMachinePrice
+.done
+	ld de, hItemPrice
+	pop af
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	ret
 
-CopyStringToCF4B:: ; 386E
-	dr $386E, $3879
+; copies a string from [de] to [wcf4b]
+CopyStringToCF4B::
+	ld hl, wcf4b
+	; fall through
 
-JoypadLowSensitivity:: ; 3879
-	dr $3879, $38AE
+; copies a string from [de] to [hl]
+CopyString::
+	ld a, [de]
+	inc de
+	ld [hli], a
+	cp "@"
+	jr nz, CopyString
+	ret
 
-WaitForTextScrollButtonPress:: ; 38AE
-	dr $38AE, $38E1
+; this function is used when lower button sensitivity is wanted (e.g. menus)
+; OUTPUT: [hJoy5] = pressed buttons in usual format
+; there are two flags that control its functionality, [hJoy6] and [hJoy7]
+; there are esentially three modes of operation
+; 1. Get newly pressed buttons only
+;    ([hJoy7] == 0, [hJoy6] == any)
+;    Just copies [hJoyPressed] to [hJoy5].
+; 2. Get currently pressed buttons at low sample rate with delay
+;    ([hJoy7] == 1, [hJoy6] != 0)
+;    If the user holds down buttons for more than half a second,
+;    report buttons as being pressed up to 12 times per second thereafter.
+;    If the user holds down buttons for less than half a second,
+;    report only one button press.
+; 3. Same as 2, but report no buttons as pressed if A or B is held down.
+;    ([hJoy7] == 1, [hJoy6] == 0)
+JoypadLowSensitivity::
+	call Joypad
+	lda hJoy7 ; flag
+	and a ; get all currently pressed buttons or only newly pressed buttons?
+	ld a,[hJoyPressed] ; newly pressed buttons
+	jr z,.storeButtonState
+	ld a,[hJoyHeld] ; all currently pressed buttons
+.storeButtonState
+	ld [hJoy5],a
+	ld a,[hJoyPressed] ; newly pressed buttons
+	and a ; have any buttons been newly pressed since last check?
+	jr z,.noNewlyPressedButtons
+.newlyPressedButtons
+	ld a,30 ; half a second delay
+	ld [H_FRAMECOUNTER],a
+	ret
+.noNewlyPressedButtons
+	ld a,[H_FRAMECOUNTER]
+	and a ; is the delay over?
+	jr z,.delayOver
+.delayNotOver
+	xor a
+	ld [hJoy5],a ; report no buttons as pressed
+	ret
+.delayOver
+; if [hJoy6] = 0 and A or B is pressed, report no buttons as pressed
+	ld a,[hJoyHeld]
+	and A_BUTTON | B_BUTTON
+	jr z,.setShortDelay
+	ld a,[hJoy6] ; flag
+	and a
+	jr nz,.setShortDelay
+	xor a
+	ld [hJoy5],a
+.setShortDelay
+	ld a,5 ; 1/12 of a second delay
+	ld [H_FRAMECOUNTER],a
+	ret
 
-ManualTextScroll:: ; 38E1
-	dr $38E1, $391D
+WaitForTextScrollButtonPress::
+	ld a, [H_DOWNARROWBLINKCNT1]
+	push af
+	ld a, [H_DOWNARROWBLINKCNT2]
+	push af
+	xor a
+	ld [H_DOWNARROWBLINKCNT1], a
+	ld a, $6
+	ld [H_DOWNARROWBLINKCNT2], a
+.loop
+	push hl
+	ld a, [wTownMapSpriteBlinkingEnabled]
+	and a
+	jr z, .skipAnimation
+	call TownMapSpriteBlinkingAnimation
+.skipAnimation
+	coord hl, 18, 16
+	call HandleDownArrowBlinkTiming
+	pop hl
+	call JoypadLowSensitivity
+	predef CableClub_Run
+	ld a, [hJoy5]
+	and A_BUTTON | B_BUTTON
+	jr z, .loop
+	pop af
+	ld [H_DOWNARROWBLINKCNT2], a
+	pop af
+	ld [H_DOWNARROWBLINKCNT1], a
+	ret
 
-PrintLetterDelay:: ; 391D
-	dr $391D, $3969
+; (unless in link battle) waits for A or B being pressed and outputs the scrolling sound effect
+ManualTextScroll::
+	ld a, [wLinkState]
+	cp LINK_STATE_BATTLING
+	jr z, .inLinkBattle
+	call WaitForTextScrollButtonPress
+	ld a, SFX_PRESS_AB
+	jp PlaySound
+.inLinkBattle
+	ld c, 65
+	jp DelayFrames
 
-RemovePokemon:: ; 3969
-	dr $3969, $3AB2
+; function to do multiplication
+; all values are big endian
+; INPUT
+; FF96-FF98 =  multiplicand
+; FF99 = multiplier
+; OUTPUT
+; FF95-FF98 = product
+Multiply::
+	push hl
+	push bc
+	callab _Multiply
+	pop bc
+	pop hl
+	ret
 
-MoveMon:: ; 3AB2
-	dr $3AB2, $3AD1
+; function to do division
+; all values are big endian
+; INPUT
+; FF95-FF98 = dividend
+; FF99 = divisor
+; b = number of bytes in the dividend (starting from FF95)
+; OUTPUT
+; FF95-FF98 = quotient
+; FF99 = remainder
+Divide::
+	push hl
+	push de
+	push bc
+	lda H_LOADEDROMBANK
+	push af
+	ld a,Bank(_Divide)
+	ld [H_LOADEDROMBANK],a
+	ld [MBC1RomBank],a
+	call _Divide
+	pop af
+	ld [H_LOADEDROMBANK],a
+	ld [MBC1RomBank],a
+	pop bc
+	pop de
+	pop hl
+	ret
 
-AddNTimes:: ; 3AD1
-	dr $3AD1, $3B08
+; This function is used to wait a short period after printing a letter to the
+; screen unless the player presses the A/B button or the delay is turned off
+; through the [wd730] or [wLetterPrintingDelayFlags] flags.
+PrintLetterDelay::
+	ld a,[wd730]
+	bit 6,a
+	ret nz
+	ld a,[wLetterPrintingDelayFlags]
+	bit 1,a
+	ret z
+	push hl
+	push de
+	push bc
+	ld a,[wLetterPrintingDelayFlags]
+	bit 0,a
+	jr z,.waitOneFrame
+	ld a,[wOptions]
+	and $f
+	ld [H_FRAMECOUNTER],a
+	jr .checkButtons
+.waitOneFrame
+	ld a,1
+	ld [H_FRAMECOUNTER],a
+.checkButtons
+	call Joypad
+	ld a,[hJoyHeld]
+.checkAButton
+	bit 0,a ; is the A button pressed?
+	jr z,.checkBButton
+	jr .endWait
+.checkBButton
+	bit 1,a ; is the B button pressed?
+	jr z,.buttonsNotPressed
+.endWait
+	call DelayFrame
+	jr .done
+.buttonsNotPressed ; if neither A nor B is pressed
+	ld a,[H_FRAMECOUNTER]
+	and a
+	jr nz,.checkButtons
+.done
+	pop bc
+	pop de
+	pop hl
+	ret
 
-HandleMenuInput:: ; 3B08
-	dr $3B08, $3B0C
+; Copies [hl, bc) to [de, bc - hl).
+; In other words, the source data is from hl up to but not including bc,
+; and the destination is de.
+CopyDataUntil::
+	ld a,[hli]
+	ld [de],a
+	inc de
+	ld a,h
+	cp b
+	jr nz,CopyDataUntil
+	ld a,l
+	cp c
+	jr nz,CopyDataUntil
+	ret
 
-HandleMenuInput_:: ; 3B0C
-	dr $3B0C, $3BC6
+; Function to remove a pokemon from the party or the current box.
+; wWhichPokemon determines the pokemon.
+; [wRemoveMonFromBox] == 0 specifies the party.
+; [wRemoveMonFromBox] != 0 specifies the current box.
+RemovePokemon::
+	jpab _RemovePokemon
 
-PlaceMenuCursor:: ; 3BC6
-	dr $3BC6, $3C1C
+AddPartyMon::
+	push hl
+	push de
+	push bc
+	callba _AddPartyMon
+	pop bc
+	pop de
+	pop hl
+	ret
 
-PlaceUnfilledArrowMenuCursor:: ; 3C1C
-	dr $3C1C, $3C29
+; calculates all 5 stats of current mon and writes them to [de]
+CalcStats::
+	ld c, $0
+.statsLoop
+	inc c
+	call CalcStat
+	ld a, [H_MULTIPLICAND+1]
+	ld [de], a
+	inc de
+	ld a, [H_MULTIPLICAND+2]
+	ld [de], a
+	inc de
+	ld a, c
+	cp NUM_STATS
+	jr nz, .statsLoop
+	ret
 
-EraseMenuCursor:: ; 3C29
-	dr $3C29, $3C6C
+; calculates stat c of current mon
+; c: stat to calc (HP=1,Atk=2,Def=3,Spd=4,Spc=5)
+; b: consider stat exp?
+; hl: base ptr to stat exp values ([hl + 2*c - 1] and [hl + 2*c])
+CalcStat::
+	push hl
+	push de
+	push bc
+	ld a, b
+	ld d, a
+	push hl
+	ld hl, wMonHeader
+	ld b, $0
+	add hl, bc
+	ld a, [hl]          ; read base value of stat
+	ld e, a
+	pop hl
+	push hl
+	sla c
+	ld a, d
+	and a
+	jr z, .statExpDone  ; consider stat exp?
+	add hl, bc          ; skip to corresponding stat exp value
+.statExpLoop            ; calculates ceil(Sqrt(stat exp)) in b
+	xor a
+	ld [H_MULTIPLICAND], a
+	ld [H_MULTIPLICAND+1], a
+	inc b               ; increment current stat exp bonus
+	ld a, b
+	cp $ff
+	jr z, .statExpDone
+	ld [H_MULTIPLICAND+2], a
+	ld [H_MULTIPLIER], a
+	call Multiply
+	ld a, [hld]
+	ld d, a
+	ld a, [$ff98]
+	sub d
+	ld a, [hli]
+	ld d, a
+	ld a, [$ff97]
+	sbc d               ; test if (current stat exp bonus)^2 < stat exp
+	jr c, .statExpLoop
+.statExpDone
+	srl c
+	pop hl
+	push bc
+	ld bc, wPartyMon1DVs - (wPartyMon1HPExp - 1) ; also wEnemyMonDVs - wEnemyMonHP
+	add hl, bc
+	pop bc
+	ld a, c
+	cp $2
+	jr z, .getAttackIV
+	cp $3
+	jr z, .getDefenseIV
+	cp $4
+	jr z, .getSpeedIV
+	cp $5
+	jr z, .getSpecialIV
+.getHpIV
+	push bc
+	ld a, [hl]  ; Atk IV
+	swap a
+	and $1
+	sla a
+	sla a
+	sla a
+	ld b, a
+	ld a, [hli] ; Def IV
+	and $1
+	sla a
+	sla a
+	add b
+	ld b, a
+	ld a, [hl] ; Spd IV
+	swap a
+	and $1
+	sla a
+	add b
+	ld b, a
+	ld a, [hl] ; Spc IV
+	and $1
+	add b      ; HP IV: LSB of the other 4 IVs
+	pop bc
+	jr .calcStatFromIV
+.getAttackIV
+	ld a, [hl]
+	swap a
+	and $f
+	jr .calcStatFromIV
+.getDefenseIV
+	ld a, [hl]
+	and $f
+	jr .calcStatFromIV
+.getSpeedIV
+	inc hl
+	ld a, [hl]
+	swap a
+	and $f
+	jr .calcStatFromIV
+.getSpecialIV
+	inc hl
+	ld a, [hl]
+	and $f
+.calcStatFromIV
+	ld d, $0
+	add e
+	ld e, a
+	jr nc, .noCarry
+	inc d                     ; de = Base + IV
+.noCarry
+	sla e
+	rl d                      ; de = (Base + IV) * 2
+	srl b
+	srl b                     ; b = ceil(Sqrt(stat exp)) / 4
+	ld a, b
+	add e
+	jr nc, .noCarry2
+	inc d                     ; da = (Base + IV) * 2 + ceil(Sqrt(stat exp)) / 4
+.noCarry2
+	ld [H_MULTIPLICAND+2], a
+	ld a, d
+	ld [H_MULTIPLICAND+1], a
+	xor a
+	ld [H_MULTIPLICAND], a
+	ld a, [wCurEnemyLVL]
+	ld [H_MULTIPLIER], a
+	call Multiply            ; ((Base + IV) * 2 + ceil(Sqrt(stat exp)) / 4) * Level
+	ld a, [H_MULTIPLICAND]
+	ld [H_DIVIDEND], a
+	ld a, [H_MULTIPLICAND+1]
+	ld [H_DIVIDEND+1], a
+	ld a, [H_MULTIPLICAND+2]
+	ld [H_DIVIDEND+2], a
+	ld a, $64
+	ld [H_DIVISOR], a
+	ld a, $3
+	ld b, a
+	call Divide             ; (((Base + IV) * 2 + ceil(Sqrt(stat exp)) / 4) * Level) / 100
+	ld a, c
+	cp $1
+	ld a, 5 ; + 5 for non-HP stat
+	jr nz, .notHPStat
+	ld a, [wCurEnemyLVL]
+	ld b, a
+	ld a, [H_MULTIPLICAND+2]
+	add b
+	ld [H_MULTIPLICAND+2], a
+	jr nc, .noCarry3
+	ld a, [H_MULTIPLICAND+1]
+	inc a
+	ld [H_MULTIPLICAND+1], a ; HP: (((Base + IV) * 2 + ceil(Sqrt(stat exp)) / 4) * Level) / 100 + Level
+.noCarry3
+	ld a, 10 ; +10 for HP stat
+.notHPStat
+	ld b, a
+	ld a, [H_MULTIPLICAND+2]
+	add b
+	ld [H_MULTIPLICAND+2], a
+	jr nc, .noCarry4
+	ld a, [H_MULTIPLICAND+1]
+	inc a                    ; non-HP: (((Base + IV) * 2 + ceil(Sqrt(stat exp)) / 4) * Level) / 100 + 5
+	ld [H_MULTIPLICAND+1], a ; HP: (((Base + IV) * 2 + ceil(Sqrt(stat exp)) / 4) * Level) / 100 + Level + 10
+.noCarry4
+	ld a, [H_MULTIPLICAND+1] ; check for overflow (>999)
+	cp 999 / $100 + 1
+	jr nc, .overflow
+	cp 999 / $100
+	jr c, .noOverflow
+	ld a, [H_MULTIPLICAND+2]
+	cp 999 % $100 + 1
+	jr c, .noOverflow
+.overflow
+	ld a, 999 / $100               ; overflow: cap at 999
+	ld [H_MULTIPLICAND+1], a
+	ld a, 999 % $100
+	ld [H_MULTIPLICAND+2], a
+.noOverflow
+	pop bc
+	pop de
+	pop hl
+	ret
+
+AddEnemyMonToPlayerParty::
+	ld a, [H_LOADEDROMBANK]
+	push af
+	ld a, BANK(_AddEnemyMonToPlayerParty)
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	call _AddEnemyMonToPlayerParty
+	pop bc
+	ld a, b
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	ret
+
+MoveMon::
+	ld a, [H_LOADEDROMBANK]
+	push af
+	ld a, BANK(_MoveMon)
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	call _MoveMon
+	pop bc
+	ld a, b
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	ret
+
+; skips a text entries, each of size NAME_LENGTH (like trainer name, OT name, rival name, ...)
+; hl: base pointer, will be incremented by NAME_LENGTH * a
+SkipFixedLengthTextEntries::
+	and a
+	ret z
+	ld bc, NAME_LENGTH
+.skipLoop
+	add hl, bc
+	dec a
+	jr nz, .skipLoop
+	ret
+
+AddNTimes::
+; add bc to hl a times
+	and a
+	ret z
+.loop
+	add hl,bc
+	dec a
+	jr nz,.loop
+	ret
+
+; Compare strings, c bytes in length, at de and hl.
+; Often used to compare big endian numbers in battle calculations.
+StringCmp::
+	ld a,[de]
+	cp [hl]
+	ret nz
+	inc de
+	inc hl
+	dec c
+	jr nz,StringCmp
+	ret
+
+; INPUT:
+; a = oam block index (each block is 4 oam entries)
+; b = Y coordinate of upper left corner of sprite
+; c = X coordinate of upper left corner of sprite
+; de = base address of 4 tile number and attribute pairs
+WriteOAMBlock::
+	ld h,wOAMBuffer / $100
+	swap a ; multiply by 16
+	ld l,a
+	call .writeOneEntry ; upper left
+	push bc
+	ld a,8
+	add c
+	ld c,a
+	call .writeOneEntry ; upper right
+	pop bc
+	ld a,8
+	add b
+	ld b,a
+	call .writeOneEntry ; lower left
+	ld a,8
+	add c
+	ld c,a
+	                      ; lower right
+.writeOneEntry
+	ld [hl],b ; Y coordinate
+	inc hl
+	ld [hl],c ; X coordinate
+	inc hl
+	ld a,[de] ; tile number
+	inc de
+	ld [hli],a
+	ld a,[de] ; attribute
+	inc de
+	ld [hli],a
+	ret
+
+HandleMenuInput::
+	xor a
+	ld [wPartyMenuAnimMonEnabled],a
+
+HandleMenuInput_::
+	ld a,[H_DOWNARROWBLINKCNT1]
+	push af
+	ld a,[H_DOWNARROWBLINKCNT2]
+	push af ; save existing values on stack
+	xor a
+	ld [H_DOWNARROWBLINKCNT1],a ; blinking down arrow timing value 1
+	ld a,6
+	ld [H_DOWNARROWBLINKCNT2],a ; blinking down arrow timing value 2
+.loop1
+	xor a
+	ld [wAnimCounter],a ; counter for pokemon shaking animation
+	call PlaceMenuCursor
+	call Delay3
+.loop2
+	push hl
+	ld a,[wPartyMenuAnimMonEnabled]
+	and a ; is it a pokemon selection menu?
+	jr z,.getJoypadState
+	callba AnimatePartyMon ; shake mini sprite of selected pokemon
+.getJoypadState
+	pop hl
+	call JoypadLowSensitivity
+	ld a,[hJoy5]
+	and a ; was a key pressed?
+	jr nz,.keyPressed
+	push hl
+	coord hl, 18, 11 ; coordinates of blinking down arrow in some menus
+	call HandleDownArrowBlinkTiming ; blink down arrow (if any)
+	pop hl
+	ld a,[wMenuJoypadPollCount]
+	dec a
+	jr z,.giveUpWaiting
+	jr .loop2
+.giveUpWaiting
+; if a key wasn't pressed within the specified number of checks
+	pop af
+	ld [H_DOWNARROWBLINKCNT2],a
+	pop af
+	ld [H_DOWNARROWBLINKCNT1],a ; restore previous values
+	xor a
+	ld [wMenuWrappingEnabled],a ; disable menu wrapping
+	ret
+.keyPressed
+	xor a
+	ld [wCheckFor180DegreeTurn],a
+	ld a,[hJoy5]
+	ld b,a
+	bit 6,a ; pressed Up key?
+	jr z,.checkIfDownPressed
+.upPressed
+	ld a,[wCurrentMenuItem] ; selected menu item
+	and a ; already at the top of the menu?
+	jr z,.alreadyAtTop
+.notAtTop
+	dec a
+	ld [wCurrentMenuItem],a ; move selected menu item up one space
+	jr .checkOtherKeys
+.alreadyAtTop
+	ld a,[wMenuWrappingEnabled]
+	and a ; is wrapping around enabled?
+	jr z,.noWrappingAround
+	ld a,[wMaxMenuItem]
+	ld [wCurrentMenuItem],a ; wrap to the bottom of the menu
+	jr .checkOtherKeys
+.checkIfDownPressed
+	bit 7,a
+	jr z,.checkOtherKeys
+.downPressed
+	ld a,[wCurrentMenuItem]
+	inc a
+	ld c,a
+	ld a,[wMaxMenuItem]
+	cp c
+	jr nc,.notAtBottom
+.alreadyAtBottom
+	ld a,[wMenuWrappingEnabled]
+	and a ; is wrapping around enabled?
+	jr z,.noWrappingAround
+	ld c,$00 ; wrap from bottom to top
+.notAtBottom
+	ld a,c
+	ld [wCurrentMenuItem],a
+.checkOtherKeys
+	ld a,[wMenuWatchedKeys]
+	and b ; does the menu care about any of the pressed keys?
+	jp z,.loop1
+.checkIfAButtonOrBButtonPressed
+	ld a,[hJoy5]
+	and A_BUTTON | B_BUTTON
+	jr z,.skipPlayingSound
+.AButtonOrBButtonPressed
+	push hl
+	ld hl,wFlags_0xcd60
+	bit 5,[hl]
+	pop hl
+	jr nz,.skipPlayingSound
+	ld a,SFX_PRESS_AB
+	call PlaySound
+.skipPlayingSound
+	pop af
+	ld [H_DOWNARROWBLINKCNT2],a
+	pop af
+	ld [H_DOWNARROWBLINKCNT1],a ; restore previous values
+	xor a
+	ld [wMenuWrappingEnabled],a ; disable menu wrapping
+	ld a,[hJoy5]
+	ret
+.noWrappingAround
+	ld a,[wMenuWatchMovingOutOfBounds]
+	and a ; should we return if the user tried to go past the top or bottom?
+	jr z,.checkOtherKeys
+	jr .checkIfAButtonOrBButtonPressed
+
+PlaceMenuCursor::
+	ld a,[wTopMenuItemY]
+	and a ; is the y coordinate 0?
+	jr z,.adjustForXCoord
+	coord hl, 0, 0
+	ld bc,SCREEN_WIDTH
+.topMenuItemLoop
+	add hl,bc
+	dec a
+	jr nz,.topMenuItemLoop
+.adjustForXCoord
+	ld a,[wTopMenuItemX]
+	ld b,0
+	ld c,a
+	add hl,bc
+	push hl
+	ld a,[wLastMenuItem]
+	and a ; was the previous menu id 0?
+	jr z,.checkForArrow1
+	ld bc,40
+.oldMenuItemLoop
+	add hl,bc
+	dec a
+	jr nz,.oldMenuItemLoop
+.checkForArrow1
+	ld a,[hl]
+	cp a,"▶" ; was an arrow next to the previously selected menu item?
+	jr nz,.skipClearingArrow
+.clearArrow
+	ld a,[wTileBehindCursor]
+	ld [hl],a
+.skipClearingArrow
+	pop hl
+	ld a,[wCurrentMenuItem]
+	and a
+	jr z,.checkForArrow2
+	ld bc,40
+.currentMenuItemLoop
+	add hl,bc
+	dec a
+	jr nz,.currentMenuItemLoop
+.checkForArrow2
+	ld a,[hl]
+	cp "▶" ; has the right arrow already been placed?
+	jr z,.skipSavingTile ; if so, don't lose the saved tile
+	ld [wTileBehindCursor],a ; save tile before overwriting with right arrow
+.skipSavingTile
+	ld a,"▶" ; place right arrow
+	ld [hl],a
+	ld a,l
+	ld [wMenuCursorLocation],a
+	ld a,h
+	ld [wMenuCursorLocation + 1],a
+	ld a,[wCurrentMenuItem]
+	ld [wLastMenuItem],a
+	ret
+
+; This is used to mark a menu cursor other than the one currently being
+; manipulated. In the case of submenus, this is used to show the location of
+; the menu cursor in the parent menu. In the case of swapping items in list,
+; this is used to mark the item that was first chosen to be swapped.
+PlaceUnfilledArrowMenuCursor::
+	ld b,a
+	ld a,[wMenuCursorLocation]
+	ld l,a
+	ld a,[wMenuCursorLocation + 1]
+	ld h,a
+	ld [hl],$ec ; outline of right arrow
+	ld a,b
+	ret
+
+; Replaces the menu cursor with a blank space.
+EraseMenuCursor::
+	ld a,[wMenuCursorLocation]
+	ld l,a
+	ld a,[wMenuCursorLocation + 1]
+	ld h,a
+	ld [hl]," "
+	ret
+
+; This toggles a blinking down arrow at hl on and off after a delay has passed.
+; This is often called even when no blinking is occurring.
+; The reason is that most functions that call this initialize H_DOWNARROWBLINKCNT1 to 0.
+; The effect is that if the tile at hl is initialized with a down arrow,
+; this function will toggle that down arrow on and off, but if the tile isn't
+; initliazed with a down arrow, this function does nothing.
+; That allows this to be called without worrying about if a down arrow should
+; be blinking.
+HandleDownArrowBlinkTiming::
+	ld a,[hl]
+	ld b,a
+	ld a,"▼"
+	cp b
+	jr nz,.downArrowOff
+.downArrowOn
+	ld a,[H_DOWNARROWBLINKCNT1]
+	dec a
+	ld [H_DOWNARROWBLINKCNT1],a
+	ret nz
+	ld a,[H_DOWNARROWBLINKCNT2]
+	dec a
+	ld [H_DOWNARROWBLINKCNT2],a
+	ret nz
+	ld a," "
+	ld [hl],a
+	ld a,$ff
+	ld [H_DOWNARROWBLINKCNT1],a
+	ld a,$06
+	ld [H_DOWNARROWBLINKCNT2],a
+	ret
+.downArrowOff
+	ld a,[H_DOWNARROWBLINKCNT1]
+	and a
+	ret z
+	dec a
+	ld [H_DOWNARROWBLINKCNT1],a
+	ret nz
+	dec a
+	ld [H_DOWNARROWBLINKCNT1],a
+	ld a,[H_DOWNARROWBLINKCNT2]
+	dec a
+	ld [H_DOWNARROWBLINKCNT2],a
+	ret nz
+	ld a,$06
+	ld [H_DOWNARROWBLINKCNT2],a
+	ld a,"▼"
+	ld [hl],a
+	ret
 
 ; The following code either enables or disables the automatic drawing of
 ; text boxes by DisplayTextID. Both functions cause DisplayTextID to wait
@@ -2310,20 +4357,111 @@ GetHealthBarColor::
 	ld [hl], d
 	ret
 
-ReloadMapSpriteTilePatterns:: ; 3E38
-	dr $3E38, $3E5E
+; Copy the current map's sprites' tile patterns to VRAM again after they have
+; been overwritten by other tile patterns.
+ReloadMapSpriteTilePatterns::
+	ld hl, wFontLoaded
+	ld a, [hl]
+	push af
+	res 0, [hl]
+	push hl
+	xor a
+	ld [wSpriteSetID], a
+	call DisableLCD
+	callba InitMapSprites
+	call EnableLCD
+	pop hl
+	pop af
+	ld [hl], a
+	call LoadPlayerSpriteGraphics
+	call LoadFontTilePatterns
+	jp UpdateSprites
 
-GiveItem:: ; 3E5E
-	dr $3E5E, $3E8C
 
-Random:: ; 3E8C
-	dr $3E8C, $3E9D
+GiveItem::
+; Give player quantity c of item b,
+; and copy the item's name to wcf4b.
+; Return carry on success.
+	ld a, b
+	ld [wd11e], a
+	ld [wcf91], a
+	ld a, c
+	ld [wItemQuantity], a
+	ld hl,wNumBagItems
+	call AddItemToInventory
+	ret nc
+	call GetItemName
+	call CopyStringToCF4B
+	scf
+	ret
 
-Predef:: ; 3E9D
-	dr $3E9D, $3EE5
+GivePokemon::
+; Give the player monster b at level c.
+	ld a, b
+	ld [wcf91], a
+	ld a, c
+	ld [wCurEnemyLVL], a
+	xor a ; PLAYER_PARTY_DATA
+	ld [wMonDataLocation], a
+	jpba _GivePokemon
 
-CheckForHiddenObjectOrBookshelfOrCardKeyDoor:: ; 3EE5
-	dr $3EE5, $3F25
+
+Random::
+; Return a random number in a.
+; For battles, use BattleRandom.
+	push hl
+	push de
+	push bc
+	callba Random_
+	ld a, [hRandomAdd]
+	pop bc
+	pop de
+	pop hl
+	ret
+
+
+INCLUDE "home/predef.asm"
+
+
+UpdateCinnabarGymGateTileBlocks::
+	jpba UpdateCinnabarGymGateTileBlocks_
+
+CheckForHiddenObjectOrBookshelfOrCardKeyDoor::
+	ld a, [H_LOADEDROMBANK]
+	push af
+	ld a, [hJoyHeld]
+	bit 0, a ; A button
+	jr z, .nothingFound
+; A button is pressed
+	ld a, Bank(CheckForHiddenObject)
+	ld [MBC1RomBank], a
+	ld [H_LOADEDROMBANK], a
+	call CheckForHiddenObject
+	ld a, [$ffee]
+	and a
+	jr nz, .hiddenObjectNotFound
+	ld a, [wHiddenObjectFunctionRomBank]
+	ld [MBC1RomBank], a
+	ld [H_LOADEDROMBANK], a
+	ld de, .returnAddress
+	push de
+	jp [hl]
+.returnAddress
+	xor a
+	jr .done
+.hiddenObjectNotFound
+	callba PrintBookshelfText
+	ld a, [$ffdb]
+	and a
+	jr z, .done
+.nothingFound
+	ld a, $ff
+.done
+	ld [$ffeb], a
+	pop af
+	ld [MBC1RomBank], a
+	ld [H_LOADEDROMBANK], a
+	ret
 
 PrintPredefTextID::
 	ld [hSpriteIndexOrTextID], a
