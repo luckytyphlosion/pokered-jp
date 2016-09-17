@@ -74,7 +74,9 @@ DrawStartMenu:: ; 01:72C0
 CableClubNPC:: ; 01:736B
 	dr $736B, $755F
 ResetStatusAndHalveMoneyOnBlackout:: ; 01:755F
-	dr $755F, $8000
+	dr $755F, $75C1
+LoadMonData_:: ; 01:75C1
+	dr $75C1, $8000
 
 SECTION "bank2",ROMX,BANK[$2]
 INCLUDE "audio/engine_1.asm"
@@ -401,7 +403,9 @@ UpdateSpriteFacingOffsetAndDelayMovement:: ; 04:5AD7
 StartMenu_Pokedex:: ; 04:5AF8
 	dr $11AF8, $11B0C
 StartMenu_Pokemon:: ; 04:5B0C
-	dr $11B0C, $11DE6
+	dr $11B0C, $11DD1
+ErasePartyMenuCursors:: ; 04:5DD1
+	dr $11DD1, $11DE6
 StartMenu_Item:: ; 04:5DE6
 	dr $11DE6, $11F60
 StartMenu_TrainerInfo:: ; 04:5F60
@@ -409,7 +413,9 @@ StartMenu_TrainerInfo:: ; 04:5F60
 StartMenu_SaveReset:: ; 04:60E6
 	dr $120E6, $120F9
 StartMenu_Option:: ; 04:60F9
-	dr $120F9, $12241
+	dr $120F9, $12116
+SwitchPartyMon:: ; 04:6116
+	dr $12116, $12241
 CanLearnTM:: ; 04:6241
 	dr $12241, $12266
 TMToMove:: ; 04:6266
@@ -421,7 +427,11 @@ DrawHP2:: ; 04:764B
 StatusScreen:: ; 04:769D
 	dr $1369D, $13896
 StatusScreen2:: ; 04:7896
-	dr $13896, $4000 * $5
+	dr $13896, $13A0C
+DrawPartyMenu_:: ; 04:7A0C
+	dr $13A0C, $13A1D
+RedrawPartyMenu_:: ; 04:7A1D
+	dr $13A1D, $4000 * $5
 
 SECTION "bank5",ROMX,BANK[$5]
 RedCyclingSprite:     INCBIN "gfx/sprites/cycling.2bpp"
@@ -763,7 +773,9 @@ SECTION "bankE",ROMX,BANK[$E]
 INCBIN "baserom.gbc", $4000 * $E, $1068
 
 MonsterNames:: ; 0E:5068
-	dr $39068, $39D1C
+	dr $39068, $3941E
+CryData:: ; 0E:541E
+	dr $3941E, $39D1C
 TrainerNames:: ; 0E:5D1C
 	dr $39D1C, $3AD11
 PokeballTileGraphics:: ; 0E:6D11
@@ -795,7 +807,9 @@ InitOpponent:: ; 0F:720A
 AnimateSendingOutMon:: ; 0F:7366
 	dr $3F366, $3F3BA
 CopyUncompressedPicToTilemap:: ; 0F:73BA
-	dr $3F3BA, $3F3F8
+	dr $3F3BA, $3F3C5
+CopyUncompressedPicToHL:: ; 0F:73C5
+	dr $3F3C5, $3F3F8
 LoadMonBackPic:: ; 0F:73F8
 	dr $3F3F8, $4000 * $10
 
@@ -920,8 +934,8 @@ VendingMachineMenu:: ; 1D:4E36
 	dr $74E36, $4000 * $1E
 
 SECTION "bank1E",ROMX,BANK[$1E]
-INCBIN "baserom.gbc", $4000 * $1E, $D99
-
+PrintStatusAilment:: ; 1E:4000
+	dr $78000, $78D99
 MoveAnimation:: ; 1E:4D99
 	dr $78D99, $798A0
 GetMoveSoundB:: ; 1E:58A0
