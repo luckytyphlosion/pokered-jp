@@ -136,9 +136,9 @@ AutoBgMapTransfer::
 .transferBottomThird
 	coord hl, 0, 12
 	ld sp,hl
-	ld a,[H_AUTOBGTRANSFERDEST + 1]
+	lda H_AUTOBGTRANSFERDEST + 1
 	ld h,a
-	ld a,[H_AUTOBGTRANSFERDEST]
+	lda H_AUTOBGTRANSFERDEST
 	ld l,a
 	ld de,(12 * 32)
 	add hl,de
@@ -147,18 +147,18 @@ AutoBgMapTransfer::
 .transferTopThird
 	coord hl, 0, 0
 	ld sp,hl
-	ld a,[H_AUTOBGTRANSFERDEST + 1]
+	lda H_AUTOBGTRANSFERDEST + 1
 	ld h,a
-	ld a,[H_AUTOBGTRANSFERDEST]
+	lda H_AUTOBGTRANSFERDEST
 	ld l,a
 	ld a,TRANSFERMIDDLE
 	jr .doTransfer
 .transferMiddleThird
 	coord hl, 0, 6
 	ld sp,hl
-	ld a,[H_AUTOBGTRANSFERDEST + 1]
+	lda H_AUTOBGTRANSFERDEST + 1
 	ld h,a
-	ld a,[H_AUTOBGTRANSFERDEST]
+	lda H_AUTOBGTRANSFERDEST
 	ld l,a
 	ld de,(6 * 32)
 	add hl,de
@@ -430,13 +430,10 @@ UpdateMovingBgTiles::
 	ld [hMovingBGTilesCounter1], a
 
 	ld a, [wMovingBGTilesCounter2]
-	and 3
-	cp 2
+	and 1
 	ld hl, FlowerTile1
-	jr c, .copy
-	ld hl, FlowerTile2
 	jr z, .copy
-	ld hl, FlowerTile3
+	ld hl, FlowerTile2
 .copy
 	ld de, vTileset + $3 * $10
 	ld c, $10
@@ -450,4 +447,3 @@ UpdateMovingBgTiles::
 
 FlowerTile1: INCBIN "gfx/tilesets/flower/flower1.2bpp"
 FlowerTile2: INCBIN "gfx/tilesets/flower/flower2.2bpp"
-FlowerTile3: INCBIN "gfx/tilesets/flower/flower3.2bpp"

@@ -74,10 +74,6 @@ VBlank::
 
 	callba TrackPlayTime ; keep track of time played
 
-	ld a, [hDisableJoypadPolling]
-	and a
-	call z, ReadJoypad
-
 	ld a, [wVBlankSavedROMBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

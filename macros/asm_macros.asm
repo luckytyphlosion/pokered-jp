@@ -3,6 +3,21 @@ lb: MACRO ; r, hi, lo
 	ld \1, (\2) << 8 + ((\3) & $ff)
 ENDM
 
+; These two macros are for dealing with cases where the ROM contains the long
+; form of "ld a, [$ffXX]" or "ld [$ffXX], a". Rgbasm outputs the short form.
+
+; ld a, [\1]
+lda: MACRO
+	db $fa
+	dw \1
+ENDM
+
+; ld [\1], a
+sta: MACRO
+	db $ea
+	dw \1
+ENDM
+
 homecall: MACRO
 	ld a, [H_LOADEDROMBANK]
 	push af

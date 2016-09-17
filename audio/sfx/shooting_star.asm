@@ -1,6 +1,6 @@
 SFX_Shooting_Star_Ch4:
-	dutycycle 228
-	unknownsfx0x10 47
+	duty 2
+	unknownsfx0x10 95
 	unknownsfx0x20 4, 64, 224, 7
 	unknownsfx0x20 4, 96, 224, 7
 	unknownsfx0x20 4, 128, 224, 7

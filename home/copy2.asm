@@ -159,6 +159,25 @@ CopyVideoDataDouble::
 	ld c, a
 	jr .loop
 
+sub_359::
+	call DelayFrame
+	push bc
+	call JoypadLowSensitivity
+	pop bc
+	ld a, [hJoyHeld]
+	cp D_UP | SELECT | B_BUTTON
+	jr z, .yes
+	ld a, [hJoy5]
+	and START | A_BUTTON
+	jr nz, .yes
+	dec c
+	jr nz, sub_359
+	and a
+	ret
+.yes
+	scf
+	ret
+
 ClearScreenArea::
 ; Clear tilemap area cxb at hl.
 	ld a, " " ; blank tile

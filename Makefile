@@ -6,8 +6,8 @@ MD5 := md5sum -c --quiet
 pic      := $(PYTHON) extras/pokemontools/pic.py compress
 includes := $(PYTHON) extras/pokemontools/scan_includes.py
 
-pokered_obj := audio_red.o main_red.o text_red.o wram_red.o
-pokeblue_obj := audio_blue.o main_blue.o text_blue.o wram_blue.o
+pokered_obj := main_red.o wram_red.o
+pokeblue_obj := main_blue.o wram_blue.o
 
 .SUFFIXES:
 .SUFFIXES: .asm .o .gbc .png .2bpp .1bpp .pic
@@ -40,8 +40,8 @@ $(pokered_obj): %_red.o: %.asm $$(dep)
 $(pokeblue_obj): %_blue.o: %.asm $$(dep)
 	rgbasm -D _BLUE -h -o $@ $*.asm
 
-pokered_opt  = -jsv -k 01 -l 0x33 -m 0x13 -p 0 -r 03 -t "POKEMON RED"
-pokeblue_opt = -jsv -k 01 -l 0x33 -m 0x13 -p 0 -r 03 -t "POKEMON BLUE"
+pokered_opt  = -sv -k 01 -l 0x33 -m 0x03 -p 0 -r 03 -t "POKEMON RED"
+pokeblue_opt = -sv -k 01 -l 0x33 -m 0x03 -p 0 -r 03 -t "POKEMON BLUE"
 
 %.gbc: $$(%_obj)
 	rgblink -n $*.sym -o $@ $^

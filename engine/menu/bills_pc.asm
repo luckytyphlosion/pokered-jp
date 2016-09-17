@@ -12,17 +12,17 @@ DisplayPCMainMenu::
 	jr nz, .leaguePCAvailable
 	coord hl, 0, 0
 	ld b, 8
-	ld c, 14
+	ld c, 13
 	jr .next
 .noOaksPC
 	coord hl, 0, 0
 	ld b, 6
-	ld c, 14
+	ld c, 13
 	jr .next
 .leaguePCAvailable
 	coord hl, 0, 0
 	ld b, 10
-	ld c, 14
+	ld c, 13
 .next
 	call TextBoxBorder
 	call UpdateSprites
@@ -85,12 +85,12 @@ DisplayPCMainMenu::
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
 
-SomeonesPCText:   db "SOMEONE's PC@"
-BillsPCText:      db "BILL's PC@"
-PlayersPCText:    db "'s PC@"
-OaksPCText:       db "PROF.OAK's PC@"
-PKMNLeaguePCText: db $4a, "LEAGUE@"
-LogOffPCText:     db "LOG OFF@"
+SomeonesPCText:   db "だれかの　<PC>@"
+BillsPCText:      db "マサキの　<PC>@"
+PlayersPCText:    db "の　<PC>@"
+OaksPCText:       db "オーキドの　<PC>@"
+PKMNLeaguePCText: db "ポケモン　リーグ@"
+LogOffPCText:     db "スイッチを　きる@"
 
 BillsPC_::
 	ld hl, wd730
@@ -152,17 +152,7 @@ BillsPCMenu:
 	call TextBoxBorder
 	ld a, [wCurrentBoxNum]
 	and $7f
-	cp 9
-	jr c, .singleDigitBoxNum
-; two digit box num
-	sub 9
-	coord hl, 17, 16
-	ld [hl], "1"
-	add "0"
-	jr .next
-.singleDigitBoxNum
 	add "1"
-.next
 	Coorda 18, 16
 	coord hl, 10, 16
 	ld de, BoxNoPCText
@@ -234,19 +224,10 @@ BillsPCDeposit:
 	ld [wRemoveMonFromBox], a
 	call RemovePokemon
 	call WaitForSoundToFinish
-	ld hl, wBoxNumString
 	ld a, [wCurrentBoxNum]
 	and $7f
-	cp 9
-	jr c, .singleDigitBoxNum
-	sub 9
-	ld [hl], "1"
-	inc hl
-	add "0"
-	jr .next
-.singleDigitBoxNum
+	ld hl, wBoxNumString
 	add "1"
-.next
 	ld [hli], a
 	ld [hl], "@"
 	ld hl, MonWasStoredText
@@ -339,15 +320,15 @@ DisplayMonListMenu:
 	ret
 
 BillsPCMenuText:
-	db   "WITHDRAW ", $4a
-	next "DEPOSIT ",  $4a
-	next "RELEASE ",  $4a
-	next "CHANGE BOX"
-	next "SEE YA!"
+	db   "<PKMN>を　つれていく"
+	next "<PKMN>を　あずける"
+	next "<PKMN>を　にがす"
+	next "ボックスを　かえる"
+	next "さようなら"
 	db "@"
 
 BoxNoPCText:
-	db "BOX No.@"
+	db "いまのボックス@"
 
 KnowsHMMove::
 ; returns whether mon with party index [wWhichPokemon] knows an HM move
@@ -385,9 +366,9 @@ HMMoveArray:
 	db -1
 
 DisplayDepositWithdrawMenu:
-	coord hl, 9, 10
+	coord hl, 11, 10
 	ld b, 6
-	ld c, 9
+	ld c, 7
 	call TextBoxBorder
 	ld a, [wParentMenuItem]
 	and a ; was the Deposit or Withdraw item selected in the parent menu?
@@ -395,15 +376,14 @@ DisplayDepositWithdrawMenu:
 	jr nz, .next
 	ld de, WithdrawPCText
 .next
-	coord hl, 11, 12
+	coord hl, 13, 12
 	call PlaceString
-	coord hl, 11, 14
+	coord hl, 13, 14
 	ld de, StatsCancelPCText
 	call PlaceString
 	ld hl, wTopMenuItemY
 	ld a, 12
 	ld [hli], a ; wTopMenuItemY
-	ld a, 10
 	ld [hli], a ; wTopMenuItemX
 	xor a
 	ld [hli], a ; wCurrentMenuItem
@@ -451,59 +431,84 @@ DisplayDepositWithdrawMenu:
 	call LoadGBPal
 	jr .loop
 
-DepositPCText:  db "DEPOSIT@"
-WithdrawPCText: db "WITHDRAW@"
+DepositPCText:  db "あずける@"
+WithdrawPCText: db "ひきとる@"
 StatsCancelPCText:
-	db   "STATS"
-	next "CANCEL@"
+	db   "つよさをみる"
+	next "キャンセル@"
 
 SwitchOnText:
-	TX_FAR _SwitchOnText
-	db "@"
+	text "スイッチ　オン！"
+	prompt
 
 WhatText:
-	TX_FAR _WhatText
-	db "@"
+	text "なんに　するん？"
+	done
 
 DepositWhichMonText:
-	TX_FAR _DepositWhichMonText
-	db "@"
+	text "どの　<PKMN>を"
+	line "あずけたいんや？"
+	done
 
 MonWasStoredText:
-	TX_FAR _MonWasStoredText
-	db "@"
+	TX_RAM wcf4b
+	text "を　ボックス@"
+	TX_RAM wBoxNumString
+	text "に"
+	line "あずけた！"
+	prompt
 
 CantDepositLastMonText:
-	TX_FAR _CantDepositLastMonText
-	db "@"
+	text "それ　あずけたら"
+	line "こまるん　ちゃう？"
+	prompt
 
 BoxFullText:
-	TX_FAR _BoxFullText
-	db "@"
+	text "あちゃ！　ウチは"
+	line "<PKMN>で　いっぱいや"
+	prompt
 
 MonIsTakenOutText:
-	TX_FAR _MonIsTakenOutText
-	db "@"
+	TX_RAM wcf4b
+	text "を"
+	line "また　つれていく　ことにした！"
+	cont "@"
+	TX_RAM wcf4b
+	text "を　うけとった！"
+	prompt
 
 NoMonText:
-	TX_FAR _NoMonText
-	db "@"
+	text "なに？"
+	line "ウチは　なんも　あずかっとらんで？"
+	prompt
 
 CantTakeMonText:
-	TX_FAR _CantTakeMonText
-	db "@"
+	text "そんなん　いうても"
+	line "<PKMN>　もちきれへんやんけ！"
+	para "とリあえず　あずけるか　にがすか"
+	line "したら　ええんちゃう？"
+	prompt
 
 ReleaseWhichMonText:
-	TX_FAR _ReleaseWhichMonText
-	db "@"
+	text "どの　<PKMN>を"
+	line "にがすんや？"
+	done
 
 OnceReleasedText:
-	TX_FAR _OnceReleasedText
-	db "@"
+	text "にがすと　@"
+	TX_RAM wcf4b
+	text "は"
+	line "もう　もどってこんで　ええんか？"
+	done
 
 MonWasReleasedText:
-	TX_FAR _MonWasReleasedText
-	db "@"
+	TX_RAM wcf4b
+	text "を"
+	line "そとに　にがして　あげた！"
+	cont "ばいばい　@"
+	TX_RAM wcf4b
+	text "！"
+	prompt
 
 CableClubLeftGameboy::
 	ld a, [hSerialConnectionStatus]
@@ -540,8 +545,8 @@ CableClubRightGameboy::
 	tx_pre_jump JustAMomentText
 
 JustAMomentText::
-	TX_FAR _JustAMomentText
-	db "@"
+	text "ちょっと　まってね"
+	done
 
 	ld a, [wSpriteStateData1 + 9] ; player's sprite facing direction
 	cp SPRITE_FACING_UP
@@ -550,5 +555,5 @@ JustAMomentText::
 	tx_pre_jump OpenBillsPCText
 
 OpenBillsPCText::
-	db $FD ; FuncTX_BillsPC
+	TX_BILLS_PC
 

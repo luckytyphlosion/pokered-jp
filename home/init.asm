@@ -101,9 +101,9 @@ rLCDC_DEFAULT EQU %11100011
 	ld [wAudioROMBank], a
 	ld [wAudioSavedROMBank], a
 	ld a, $9c
-	ld [H_AUTOBGTRANSFERDEST + 1], a
+	sta H_AUTOBGTRANSFERDEST + 1
 	xor a
-	ld [H_AUTOBGTRANSFERDEST], a
+	sta H_AUTOBGTRANSFERDEST
 	dec a
 	ld [wUpdateSpritesEnabled], a
 

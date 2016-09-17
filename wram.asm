@@ -1160,6 +1160,9 @@ wSlotMachineRerollCounter:: ; cd4f
 ; The remaining number of times wheel 3 will roll down a symbol until a match is
 ; found, when winning is enabled. It's initialized to 4 each bet.
 
+wTradedEnemyMonOTID:: ; cd4f
+; 2 bytes
+
 wEmotionBubbleSpriteIndex:: ; cd4f
 ; the index of the sprite the emotion bubble is to be displayed above
 	ds 1
@@ -1173,10 +1176,7 @@ wSavedPlayerFacingDirection:: ; cd50
 
 wWhichAnimationOffsets:: ; cd50
 ; 0 = cut animation, 1 = boulder dust animation
-	ds 9
-
-wTradedEnemyMonOTID:: ; cd59
-	ds 2
+	ds 1
 
 wStandingOnWarpPadOrHole:: ; cd5b
 ; 0 = neither
@@ -1190,6 +1190,8 @@ wGymTrashCanIndex:: ; cd5b
 
 wSymmetricSpriteOAMAttributes:: ; cd5c
 	ds 1
+
+	ds 5
 
 wMonPartySpriteSpecies:: ; cd5d
 	ds 1
@@ -1384,9 +1386,6 @@ wScriptedNPCWalkCounter:: ; cf18
 
 	ds 1
 
-wGBC:: ; cf1a
-	ds 1
-
 wOnSGB:: ; cf1b
 ; if running on SGB, it's 1, else it's 0
 	ds 1
@@ -1437,10 +1436,11 @@ wGainBoostedExp:: ; cf4d
 	ds 17
 
 wGymCityName:: ; cf5f
-	ds 17
+	ds 5
 
 wGymLeaderName:: ; cf70
-	ds NAME_LENGTH
+; 6 bytes
+	ds 4
 
 wItemList:: ; cf7b
 	ds 16
@@ -1579,7 +1579,7 @@ wEnemyMonSpecies2:: ; cfd8
 wBattleMonSpecies2:: ; cfd9
 	ds 1
 
-wEnemyMonNick:: ds NAME_LENGTH ; cfda
+wEnemyMonNick:: ds 11 ; cfda
 
 wEnemyMon:: ; cfe5
 ; The wEnemyMon struct reaches past 0xcfff,
@@ -1609,17 +1609,33 @@ wEnemyMonAttack::    dw
 wEnemyMonDefense::   dw
 wEnemyMonSpeed::     dw
 wEnemyMonSpecial::   dw
-wEnemyMonPP::        ds 2 ; NUM_MOVES - 2
-SECTION "WRAM Bank 1", WRAMX, BANK[1]
-                     ds 2 ; NUM_MOVES - 2
-
+wEnemyMonPP::        ds NUM_MOVES
 wEnemyMonBaseStats:: ds 5
 wEnemyMonCatchRate:: ds 1
 wEnemyMonBaseExp:: ds 1
 
-wBattleMonNick:: ds NAME_LENGTH ; d009
-wBattleMon:: battle_struct wBattleMon ; d014
+wBattleMonNick:: ds 11
+wBattleMon:: ; d014
+wBattleMonSpecies::   db
+wBattleMonHP::        dw
+wBattleMonBoxLevel::  db
+wBattleMonStatus::    db
 
+SECTION "WRAM Bank 1", WRAMX, BANK[1]
+
+wBattleMonType::
+wBattleMonType1::     db
+wBattleMonType2::     db
+wBattleMonCatchRate_NotReferenced:: db
+wBattleMonMoves::     ds NUM_MOVES
+wBattleMonDVs::       ds 2
+wBattleMonLevel::     db
+wBattleMonMaxHP::     dw
+wBattleMonAttack::    dw
+wBattleMonDefense::   dw
+wBattleMonSpeed::     dw
+wBattleMonSpecial::   dw
+wBattleMonPP::        ds NUM_MOVES
 
 wTrainerClass:: ; d031
 	ds 1
@@ -1634,7 +1650,7 @@ wTempMoveNameBuffer:: ; d036
 
 wLearnMoveMonName:: ; d036
 ; The name of the mon that is learning a move.
-	ds 16
+	ds 8
 
 wTrainerBaseMoney:: ; d046
 ; 2-byte BCD number
@@ -1650,7 +1666,7 @@ wTrainerName:: ; d04a
 ; 13 bytes for the letters of the opposing trainer
 ; the name is terminated with $50 with possible
 ; unused trailing letters
-	ds 13
+	ds 11
 
 wIsInBattle:: ; d057
 ; lost battle, this is -1
@@ -2113,7 +2129,7 @@ wMoveNum:: ; d0e0
 	ds 1
 
 wMovesString:: ; d0e1
-	ds 56
+	ds 4 * 8
 
 wUnusedD119:: ; d119
 	ds 1
@@ -3170,8 +3186,6 @@ wCurMapScript:: ; da39
 ; index of current map script, mostly used as index for function pointer array
 ; mostly copied from map-specific map script pointer and wirtten back later
 	ds 1
-
-	ds 7
 
 wPlayTimeHours:: ; da41
 	ds 1

@@ -61,13 +61,8 @@ PlaceNextChar::
 Char4ETest::
 	cp $4E ; next
 	jr nz, .char4FTest
-	ld bc, 2 * SCREEN_WIDTH
-	ld a,[hFlags_0xFFF6]
-	bit 2,a
-	jr z,.ok
-	ld bc,SCREEN_WIDTH
-.ok
 	pop hl
+	ld bc, 2 * SCREEN_WIDTH
 	add hl,bc
 	push hl
 	jp PlaceNextChar_inc
@@ -94,7 +89,6 @@ endm
 	dict $4C, Char4C ; autocont
 	dict $4B, Char4B ; cont_
 	dict $51, Char51 ; para
-	dict $49, Char49 ; page
 	dict $52, Char52 ; player
 	dict $53, Char53 ; rival
 	dict $54, Char54 ; POKé
@@ -106,11 +100,57 @@ endm
 	dict $56, Char56 ; 6 dots
 	dict $57, Char57 ; done
 	dict $58, Char58 ; prompt
-	dict $4A, Char4A ; PKMN
-	dict $5F, Char5F ; dex
 	dict $59, Char59 ; TARGET
 	dict $5A, Char5A ; USER
-
+	cp $E4
+	jr z, .asm_484
+	cp $E5
+	jr nz, .asm_48d
+.asm_484
+	push hl
+	ld bc, -SCREEN_WIDTH
+	add hl, bc
+	ld [hl], a
+	pop hl
+	jr PlaceNextChar_inc
+.asm_48d
+	cp $60
+	jr nc, .asm_4c1
+	cp $40
+	jr nc, .asm_4ac
+	cp $20
+	jr nc, .asm_49d
+	add $80
+	jr .asm_49f
+.asm_49d
+	add $90
+.asm_49f
+	push af
+	ld a, $e5
+	push hl
+	ld bc, -SCREEN_WIDTH
+	add hl, bc
+	ld [hl], a
+	pop hl
+	pop af
+	jr .asm_4c1
+.asm_4ac
+	cp $44
+	jr nc, .asm_4b4
+	add $59
+	jr .asm_4b6
+.asm_4b4
+	add $86
+.asm_4b6
+	push af
+	ld a, $e4
+	push hl
+	ld bc, -SCREEN_WIDTH
+	add hl, bc
+	ld [hl], a
+	pop hl
+	pop af
+.asm_4c1
 	ld [hli],a
 	call PrintLetterDelay
 PlaceNextChar_inc::
@@ -126,8 +166,9 @@ Char00::
 	ret
 
 Char00Text:: ; “%d ERROR.”
-	TX_FAR _Char00Text
-	db "@"
+	TX_NUM hSpriteIndexOrTextID, 1, 2
+	text "エラー"
+	done
 
 Char52:: ; player’s name
 	push de
@@ -167,11 +208,6 @@ Char54:: ; POKé
 Char56:: ; ……
 	push de
 	ld de,Char56Text
-	jr FinishDTE
-
-Char4A:: ; PKMN
-	push de
-	ld de,Char4AText
 	jr FinishDTE
 
 Char59::
@@ -214,21 +250,19 @@ FinishDTE::
 	jp PlaceNextChar
 
 Char5CText::
-	db "TM@"
+	db "わざマシン@"
 Char5DText::
-	db "TRAINER@"
+	db "トレーナー@"
 Char5BText::
-	db "PC@"
+	db "パソコン@"
 Char5EText::
-	db "ROCKET@"
+	db "ロケットだん@"
 Char54Text::
-	db "POKé@"
+	db "ポケモン@"
 Char56Text::
 	db "……@"
 Char5AText::
-	db "Enemy @"
-Char4AText::
-	db $E1,$E2,"@" ; PKMN
+	db "てきの @"
 
 Char55::
 	push de
@@ -244,14 +278,7 @@ Char55::
 
 Char55Text::
 ; equivalent to Char4B
-	TX_FAR _Char55Text
-	db "@"
-
-Char5F::
-; ends a Pokédex entry
-	ld [hl],"."
-	pop hl
-	ret
+	text $4B,"@@"
 
 Char58:: ; prompt
 	ld a,[wLinkState]
@@ -286,23 +313,6 @@ Char51:: ; para
 	call DelayFrames
 	pop de
 	coord hl, 1, 14
-	jp PlaceNextChar_inc
-
-Char49::
-	push de
-	ld a,"▼"
-	Coorda 18, 16
-	call ProtectedDelay3
-	call ManualTextScroll
-	coord hl, 1, 10
-	lb bc, 7, 18
-	call ClearScreenArea
-	ld c,20
-	call DelayFrames
-	pop de
-	pop hl
-	coord hl, 1, 11
-	push hl
 	jp PlaceNextChar_inc
 
 Char4B::
@@ -364,9 +374,6 @@ TextCommandProcessor::
 	ld a,[wLetterPrintingDelayFlags]
 	push af
 	set 1,a
-	ld e,a
-	ld a, [$fff4]
-	xor e
 	ld [wLetterPrintingDelayFlags],a
 	ld a,c
 	ld [wTextDest],a
@@ -382,11 +389,6 @@ NextTextCommand::
 	ret
 .doTextCommand
 	push hl
-	cp a, $17
-	jp z, TextCommand17
-	cp a, $0e
-	jp nc,TextCommand0B ; if a != 0x17 and a >= 0xE, go to command 0xB
-; if a < 0xE, use a jump table
 	ld hl,TextCommandJumpTable
 	push bc
 	add a
@@ -669,31 +671,6 @@ TextCommand0D::
 	pop hl
 	jp NextTextCommand
 
-; process text commands in another ROM bank
-; 17AAAABB
-; AAAA = address of text commands
-; BB = bank
-TextCommand17::
-	pop hl
-	ld a,[H_LOADEDROMBANK]
-	push af
-	ld a,[hli]
-	ld e,a
-	ld a,[hli]
-	ld d,a
-	ld a,[hli]
-	ld [H_LOADEDROMBANK],a
-	ld [MBC1RomBank],a
-	push hl
-	ld l,e
-	ld h,d
-	call TextCommandProcessor
-	pop hl
-	pop af
-	ld [H_LOADEDROMBANK],a
-	ld [MBC1RomBank],a
-	jp NextTextCommand
-
 TextCommandJumpTable::
 	dw TextCommand00
 	dw TextCommand01
@@ -709,3 +686,12 @@ TextCommandJumpTable::
 	dw TextCommand0B
 	dw TextCommand0C
 	dw TextCommand0D
+	dw TextCommand0B
+	dw TextCommand0B
+	dw TextCommand0B
+	dw TextCommand0B
+	dw TextCommand0B
+	dw TextCommand0B
+	dw TextCommand0B
+	dw TextCommand0B
+	dw TextCommand0B

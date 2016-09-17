@@ -23,23 +23,23 @@ sMainDataCheckSum:: ds 1 ; b523
 
 SECTION "Saved Boxes 1", SRAM, BANK[2]
 
-sBox1:: ds wBoxDataEnd - wBoxDataStart ; a000
-sBox2:: ds wBoxDataEnd - wBoxDataStart ; a462
-sBox3:: ds wBoxDataEnd - wBoxDataStart ; a8c4
-sBox4:: ds wBoxDataEnd - wBoxDataStart ; ad26
-sBox5:: ds wBoxDataEnd - wBoxDataStart ; b188
-sBox6:: ds wBoxDataEnd - wBoxDataStart ; b5ea
-sBank2AllBoxesChecksum:: ds 1 ; ba4c
-sBank2IndividualBoxChecksums:: ds 6 ; ba4d
+;sBox1:: ds wBoxDataEnd - wBoxDataStart ; a000
+;sBox2:: ds wBoxDataEnd - wBoxDataStart ; a462
+;sBox3:: ds wBoxDataEnd - wBoxDataStart ; a8c4
+;sBox4:: ds wBoxDataEnd - wBoxDataStart ; ad26
+;sBox5:: ds wBoxDataEnd - wBoxDataStart ; b188
+;sBox6:: ds wBoxDataEnd - wBoxDataStart ; b5ea
+;sBank2AllBoxesChecksum:: ds 1 ; ba4c
+;sBank2IndividualBoxChecksums:: ds 6 ; ba4d
 
 
 SECTION "Saved Boxes 2", SRAM, BANK[3]
 
-sBox7::  ds wBoxDataEnd - wBoxDataStart ; a000
-sBox8::  ds wBoxDataEnd - wBoxDataStart ; a462
-sBox9::  ds wBoxDataEnd - wBoxDataStart ; a8c4
-sBox10:: ds wBoxDataEnd - wBoxDataStart ; ad26
-sBox11:: ds wBoxDataEnd - wBoxDataStart ; b188
-sBox12:: ds wBoxDataEnd - wBoxDataStart ; b5ea
-sBank3AllBoxesChecksum:: ds 1 ; ba4c
-sBank3IndividualBoxChecksums:: ds 6 ; ba4d
+;sBox7::  ds wBoxDataEnd - wBoxDataStart ; a000
+;sBox8::  ds wBoxDataEnd - wBoxDataStart ; a462
+;sBox9::  ds wBoxDataEnd - wBoxDataStart ; a8c4
+;sBox10:: ds wBoxDataEnd - wBoxDataStart ; ad26
+;sBox11:: ds wBoxDataEnd - wBoxDataStart ; b188
+;sBox12:: ds wBoxDataEnd - wBoxDataStart ; b5ea
+;sBank3AllBoxesChecksum:: ds 1 ; ba4c
+;sBank3IndividualBoxChecksums:: ds 6 ; ba4d
