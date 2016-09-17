@@ -6,8 +6,8 @@ MD5 := md5sum -c --quiet
 pic      := $(PYTHON) extras/pokemontools/pic.py compress
 includes := $(PYTHON) extras/pokemontools/scan_includes.py
 
-pokered_obj := main_red.o wram_red.o
-pokeblue_obj := main_blue.o wram_blue.o
+pokered_obj := audio_red.o main_red.o wram_red.o
+pokeblue_obj := audio_blue.o main_blue.o wram_blue.o
 
 .SUFFIXES:
 .SUFFIXES: .asm .o .gbc .png .2bpp .1bpp .pic
