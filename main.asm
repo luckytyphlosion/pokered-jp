@@ -15,7 +15,16 @@ PICS_5 EQU $D
 INCLUDE "home.asm"
 
 SECTION "bank1",ROMX,BANK[$1]
-	dr $4000, $4672
+	dr $4000, $421C
+
+ItemPrices:: ; 01:421C
+	dr $421C, $433F
+
+ItemNames:: ; 01:433F
+	dr $433F, $45F5
+
+UnusedNames:: ; 01:45F5
+	dr $45F5, $4672
 
 PrepareOAMData:: ; 4672
 	dr $4672, $4750
@@ -45,7 +54,9 @@ DisplayPicCenteredOrUpperRight:: ; 01:6233
 AskName:: ; 01:6479
 	dr $6479, $6ABC
 SubtractAmountPaidFromMoney_:: ; 01:6ABC
-	dr $6ABC, $6BBB
+	dr $6ABC, $6ADF
+HandleItemListSwapping:: ; 01:6ADF
+	dr $6ADF, $6BBB
 DisplayPokemartDialogue_:: ; 01:6BBB
 	dr $6BBB, $6EAB
 LearnMove:: ; 01:6EAB
@@ -355,8 +366,8 @@ UpdateHPBar2:: ; 03:7D5E
 	dr $FD5E, $4000 * $4
 
 SECTION "bank4",ROMX,BANK[$4]
-INCBIN "baserom.gbc", $4000 * $4, $1AD7
-
+MoveNames:: ; 04:4000
+	dr $10000, $11AD7
 UpdateSpriteFacingOffsetAndDelayMovement:: ; 04:5AD7
 	dr $11AD7, $11AF8
 StartMenu_Pokedex:: ; 04:5AF8
@@ -404,7 +415,6 @@ INCBIN "baserom.gbc", $4000 * $7, $270
 
 DisplayElevatorFloorMenu:: ; 07:4270
 	dr $1C270, $1FA99
-
 PrintSafariGameOverText:: ; 07:7A99
 	dr $1FA99, $4000 * $8
 
@@ -673,8 +683,12 @@ PewterGuys:: ; 0D:7DD3
 	dr $37DD3, $4000 * $E
 
 SECTION "bankE",ROMX,BANK[$E]
-INCBIN "baserom.gbc", $4000 * $E, $2D11
+INCBIN "baserom.gbc", $4000 * $E, $1068
 
+MonsterNames:: ; 0E:5068
+	dr $39068, $39D1C
+TrainerNames:: ; 0E:5D1C
+	dr $39D1C, $3AD11
 PokeballTileGraphics:: ; 0E:6D11
 	dr $3AD11, $3B0AF
 EvolutionAfterBattle:: ; 0E:70AF
@@ -692,7 +706,9 @@ AnyPartyAlive:: ; 0F:4BA3
 DrawPlayerHUDAndHPBar:: ; 0F:4EBE
 	dr $3CEBE, $3CF49
 DrawEnemyHUDAndHPBar:: ; 0F:4F49
-	dr $3CF49, $3EFF3
+	dr $3CF49, $3D00D
+DisplayBattleMenu:: ; 0F:500D
+	dr $3D00D, $3EFF3
 DoubleOrHalveSelectedStats:: ; 0F:6FF3
 	dr $3EFF3, $3F20A
 InitOpponent:: ; 0F:720A
