@@ -23,8 +23,8 @@ PlayerPCMenu:
 	set 5, [hl]
 	call LoadScreenTilesFromBuffer2
 	coord hl, 0, 0
-	ld b, $8
-	ld c, $e
+	ld b, 8
+	ld c, 10
 	call TextBoxBorder
 	call UpdateSprites
 	coord hl, 2, 2
@@ -241,63 +241,73 @@ PlayerPCToss:
 	jp .loop
 
 PlayersPCMenuEntries:
-	db   "WITHDRAW ITEM"
-	next "DEPOSIT ITEM"
-	next "TOSS ITEM"
-	next "LOG OFF@"
+	db   "どうぐを　ひきだす"
+	next "どうぐを　あずける"
+	next "どうぐを　すてる"
+	next "スイッチを　きる@"
 
 TurnedOnPC2Text:
-	TX_FAR _TurnedOnPC2Text
-	db "@"
+	text "<PLAYER>は"
+	line "<PC>の　スイッチを　いれた！"
+	prompt
 
 WhatDoYouWantText:
-	TX_FAR _WhatDoYouWantText
-	db "@"
+	text "なにを　しますか？"
+	done
 
 WhatToDepositText:
-	TX_FAR _WhatToDepositText
-	db "@"
+	text "なにを　あずけますか？"
+	done
 
 DepositHowManyText:
-	TX_FAR _DepositHowManyText
-	db "@"
+	text "いくつ　あずけますか？"
+	done
 
 ItemWasStoredText:
-	TX_FAR _ItemWasStoredText
-	db "@"
+	text "<PC>つうしんで"
+	line "@"
+	TX_RAM wcd6d
+	text "を　あずけた！"
+	prompt
 
 NothingToDepositText:
-	TX_FAR _NothingToDepositText
-	db "@"
+	text "あずけられる　どうぐを"
+	line "もっていません！"
+	prompt
 
 NoRoomToStoreText:
-	TX_FAR _NoRoomToStoreText
-	db "@"
+	text "どうぐが　いっぱいです"
+	line "もう　あずけられません！"
+	prompt
 
 WhatToWithdrawText:
-	TX_FAR _WhatToWithdrawText
-	db "@"
+	text "なにを　ひきだしますか？"
+	done
 
 WithdrawHowManyText:
-	TX_FAR _WithdrawHowManyText
-	db "@"
+	text "いくつ　ひきだしますか？"
+	done
 
 WithdrewItemText:
-	TX_FAR _WithdrewItemText
-	db "@"
+	text "<PC>つうしんで"
+	line "@"
+	TX_RAM wcd6d
+	text "を　ひきだした！"
+	prompt
 
 NothingStoredText:
-	TX_FAR _NothingStoredText
-	db "@"
+	text "なにも　あずけていません！"
+	prompt
 
 CantCarryMoreText:
-	TX_FAR _CantCarryMoreText
-	db "@"
+	text "どうぐが　いっぱいです"
+	line "もう　もてません！"
+	prompt
 
 WhatToTossText:
-	TX_FAR _WhatToTossText
-	db "@"
+	text "なにを　すてますか？"
+	done
 
 TossHowManyText:
-	TX_FAR _TossHowManyText
-	db "@"
+	text "いくつ　すてますか？"
+	done

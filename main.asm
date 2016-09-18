@@ -83,8 +83,7 @@ INCLUDE "engine/menu/text_box.asm"
 
 INCLUDE "engine/battle/moveEffects/drain_hp_effect.asm"
 
-PlayerPC:: ; 01:7BF8
-	dr $7BF8, $7F19
+INCLUDE "engine/menu/players_pc.asm"
 
 INCLUDE "engine/remove_pokemon.asm"
 
