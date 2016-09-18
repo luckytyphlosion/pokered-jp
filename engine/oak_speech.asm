@@ -153,22 +153,46 @@ OakSpeech:
 	call GBFadeOutToWhite
 	jp ClearScreen
 OakSpeechText1:
-	TX_FAR _OakSpeechText1
-	db "@"
+	text "はじめまして！"
+	line "ポケット　モンスターの　せかいへ"
+	cont "ようこそ！"
+	para "わたしの　なまえは　オーキド"
+	line "みんなからは　<PKMN>　はかせと"
+	cont "したわれて　おるよ"
+	prompt
 OakSpeechText2:
-	TX_FAR _OakSpeechText2A
+	text "この　せかいには"
+	line "ポケット　モンスターと　よばれる"
+	para "いきもの　たちが"
+	line "いたるところに　すんでいる！@"
 	TX_CRY_NIDORINA
-	TX_FAR _OakSpeechText2B
-	db "@"
+	text ""
+	para "その　<PKMN>　という　いきものを"
+	line "ひとは　ぺットに　したリ"
+	cont "しょうぶに　つかったリ・・・"
+	para "そして・・・"
+	para "わたしは　この　<PKMN>の"
+	line "けんきゅうを　してる　というわけだ"
+	prompt
 IntroducePlayerText:
-	TX_FAR _IntroducePlayerText
-	db "@"
+	text "では　はじめに　きみの　なまえを"
+	line "おしえて　もらおう！"
+	prompt
 IntroduceRivalText:
-	TX_FAR _IntroduceRivalText
-	db "@"
+	text "こいつは　わたしの　まご"
+	line "きみの　おさななじみであリ"
+	cont "ライバル　である"
+	para "・・・えーと？"
+	line "なまえは　なんて　いったかな？"
+	prompt
 OakSpeechText3:
-	TX_FAR _OakSpeechText3
-	db "@"
+	text "<PLAYER>！"
+	para "いよいよ　これから　"
+	line "きみの　ものがたリの　はじまリだ！"
+	para "ゆめと　ぼうけんと！"
+	line "ポケット　モンスターの　せかいへ！"
+	cont "レッツ　ゴー！"
+	done
 
 FadeInIntroPic:
 	ld hl,IntroFadePalettes

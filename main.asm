@@ -1,6 +1,7 @@
 INCLUDE "constants.asm"
 
 IMPORT SFX_Shooting_Star
+IMPORT Music_PalletTown
 
 NPC_SPRITES_1 EQU $4
 NPC_SPRITES_2 EQU $5
@@ -45,16 +46,16 @@ INCLUDE "engine/cable_club.asm"
 
 INCLUDE "engine/menu/main_menu.asm"
 
-	dr $5F0E, $5F59
+INCLUDE "engine/oak_speech.asm"
 
-OakSpeech:: ; 01:5F59
-	dr $5F59, $6233
-DisplayPicCenteredOrUpperRight:: ; 01:6233
-	dr $6233, $6260
 SpecialWarpIn:: ; 01:6260
 	dr $6260, $6479
 AskName:: ; 01:6479
-	dr $6479, $6ABB
+	dr $6479, $68D9
+ChoosePlayerName:: ; 01:68D9
+	dr $68D9, $692D
+ChooseRivalName:: ; 01:692D
+	dr $692D, $6ABB
 TextTerminator_6b20:: ; 01:6ABB
 	dr $6ABB, $6ABC
 SubtractAmountPaidFromMoney_:: ; 01:6ABC
@@ -231,7 +232,11 @@ PlayerCharacterTitleGraphics:   INCBIN "gfx/player_title.2bpp"
 PlayerCharacterTitleGraphicsEnd:
 
 RedPicFront:: ; 04:5941
-	dr $11941, $11AD7
+	dr $11941, $11A4B
+ShrinkPic1:: ; 04:5A4B
+	dr $11A4B, $11AA5
+ShrinkPic2:: ; 04:5A4B
+	dr $11AA5, $11AD7
 UpdateSpriteFacingOffsetAndDelayMovement:: ; 04:5AD7
 	dr $11AD7, $11AF8
 StartMenu_Pokedex:: ; 04:5AF8
