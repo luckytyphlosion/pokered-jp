@@ -88,8 +88,9 @@ PlayerPC:: ; 01:7BF8
 
 INCLUDE "engine/remove_pokemon.asm"
 
-_DisplayPokedex:: ; 01:7FC9
-	dr $7FC9, $8000
+INCLUDE "engine/display_pokedex.asm"
+
+	dr $7FFA, $8000
 
 SECTION "bank3",ROMX,BANK[$3]
 INCBIN "baserom.gbc", $4000 * $3, $529
