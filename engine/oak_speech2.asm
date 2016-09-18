@@ -28,8 +28,9 @@ ChoosePlayerName:
 	jp PrintText
 
 YourNameIsText:
-	TX_FAR _YourNameIsText
-	db "@"
+	text "ふむ・・・"
+	line "<PLAYER>　と　いうんだな！"
+	prompt
 
 ChooseRivalName:
 	call OakSpeechSlidePicRight
@@ -61,8 +62,9 @@ ChooseRivalName:
 	jp PrintText
 
 HisNameIsText:
-	TX_FAR _HisNameIsText
-	db "@"
+	text "そうだ　そうだ！　おもいだしたぞ"
+	line "<RIVAL>　という　なまえだ"
+	prompt
 
 OakSpeechSlidePicLeft:
 	push de
@@ -185,37 +187,21 @@ DisplayIntroNameTextBox:
 	jp HandleMenuInput
 
 .namestring
-	db "NAME@"
+	db "なまえこうほ@"
 
 IF DEF(_RED)
 DefaultNamesPlayer:
-	db   "NEW NAME"
-	next "RED"
-	next "ASH"
-	next "JACK"
+	db   "じぶんできめる"
+	next "レッド"
+	next "サトシ"
+	next "ジャック"
 	db   "@"
 
 DefaultNamesRival:
-	db   "NEW NAME"
-	next "BLUE"
-	next "GARY"
-	next "JOHN"
-	db   "@"
-ENDC
-
-IF DEF(_BLUE)
-DefaultNamesPlayer:
-	db   "NEW NAME"
-	next "BLUE"
-	next "GARY"
-	next "JOHN"
-	db   "@"
-
-DefaultNamesRival:
-	db   "NEW NAME"
-	next "RED"
-	next "ASH"
-	next "JACK"
+	db   "じぶんできめる"
+	next "グリーン"
+	next "シゲル"
+	next "ジョン"
 	db   "@"
 ENDC
 
@@ -245,27 +231,15 @@ GetDefaultName:
 
 IF DEF(_RED)
 DefaultNamesPlayerList:
-	db "NEW NAME@"
-	db "RED@"
-	db "ASH@"
-	db "JACK@"
+	db "じぶんできめる@"
+	db "レッド@"
+	db "サトシ@"
+	db "ジャック@"
 DefaultNamesRivalList:
-	db "NEW NAME@"
-	db "BLUE@"
-	db "GARY@"
-	db "JOHN@"
-ENDC
-IF DEF(_BLUE)
-DefaultNamesPlayerList:
-	db "NEW NAME@"
-	db "BLUE@"
-	db "GARY@"
-	db "JOHN@"
-DefaultNamesRivalList:
-	db "NEW NAME@"
-	db "RED@"
-	db "ASH@"
-	db "JACK@"
+	db "じぶんできめる@"
+	db "グリーン@"
+	db "シゲル@"
+	db "ジョン@"
 ENDC
 
 TextTerminator_6b20:

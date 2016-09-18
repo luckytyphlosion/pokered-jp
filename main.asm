@@ -48,18 +48,16 @@ INCLUDE "engine/menu/main_menu.asm"
 
 INCLUDE "engine/oak_speech.asm"
 
-SpecialWarpIn:: ; 01:6260
-	dr $6260, $6479
-AskName:: ; 01:6479
-	dr $6479, $68D9
-ChoosePlayerName:: ; 01:68D9
-	dr $68D9, $692D
-ChooseRivalName:: ; 01:692D
-	dr $692D, $6ABB
-TextTerminator_6b20:: ; 01:6ABB
-	dr $6ABB, $6ABC
-SubtractAmountPaidFromMoney_:: ; 01:6ABC
-	dr $6ABC, $6ADF
+INCLUDE "engine/special_warps.asm"
+
+INCLUDE "engine/debug1.asm"
+
+INCLUDE "engine/menu/naming_screen.asm"
+
+INCLUDE "engine/oak_speech2.asm"
+
+INCLUDE "engine/subtract_paid_money.asm"
+
 HandleItemListSwapping:: ; 01:6ADF
 	dr $6ADF, $6BBB
 DisplayPokemartDialogue_:: ; 01:6BBB
@@ -441,7 +439,9 @@ DisplayBattleMenu:: ; 0F:500D
 LoadEnemyMonData:: ; 0F:6DF1
 	dr $3EDF1, $3EFF3
 DoubleOrHalveSelectedStats:: ; 0F:6FF3
-	dr $3EFF3, $3F204
+	dr $3EFF3, $3F14C
+LoadHudTilePatterns:: ; 0F:714C
+	dr $3F14C, $3F204
 InitBattle:: ; 0F:7204
 	dr $3F204, $3F20A
 InitOpponent:: ; 0F:720A
@@ -621,9 +621,15 @@ LoadTownMap_Nest:: ; 1C:54CE
 LoadTownMap_Fly:: ; 1C:54FE
 	dr $714FE, $71B8A
 TownMapSpriteBlinkingAnimation:: ; 1C:5B8A
-	dr $71B8A, $71BC3
+	dr $71B8A, $71BBB
+AnimatePartyMon_ForceSpeed1:: ; 1C:5BBB
+	dr $71BBB, $71BC3
 AnimatePartyMon:: ; 1C:5BC3
-	dr $71BC3, $71F9D
+	dr $71BC3, $71C30
+LoadMonPartySpriteGfx:: ; 1C:5C30
+	dr $71C30, $71D46
+WriteMonPartySpriteOAMBySpecies:: ; 1C:5D46
+	dr $71D46, $71F9D
 DoInGameTradeDialogue:: ; 1C:5F9D
 	dr $71F9D, $723BF
 _RunPaletteCommand:: ; 1C:63BF

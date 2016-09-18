@@ -18,12 +18,12 @@ pokeblue_obj := audio_blue.o main_blue.o wram_blue.o
 
 roms := pokered.gbc pokeblue.gbc
 
-all: $(roms)
+all: red
 red: pokered.gbc
 blue: pokeblue.gbc
 
 # For contributors to make sure a change didn't affect the contents of the rom.
-compare: red blue
+compare: red
 	@$(MD5) roms.md5
 
 clean:
