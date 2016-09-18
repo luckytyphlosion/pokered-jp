@@ -1,6 +1,6 @@
 DisplayPokemartDialogue_:
 	ld a,[wListScrollOffset]
-	ld [wSavedListScrollOffset],a
+	push af
 	call UpdateSprites
 	xor a
 	ld [wBoughtOrSoldItemInMart],a
@@ -117,7 +117,6 @@ DisplayPokemartDialogue_:
 .bagEmpty
 	ld hl,PokemartItemBagEmptyText
 	call PrintText
-	call SaveScreenTilesToBuffer1
 	jp .returnToMainPokemartMenu
 .buyMenu
 
@@ -223,50 +222,64 @@ DisplayPokemartDialogue_:
 	ld a,1
 	ld [wUpdateSpritesEnabled],a
 	call UpdateSprites
-	ld a,[wSavedListScrollOffset]
+	pop af
 	ld [wListScrollOffset],a
 	ret
 
 PokemartBuyingGreetingText:
-	TX_FAR _PokemartBuyingGreetingText
-	db "@"
+	text "ゆっくリ　ごらんになって　ください"
+	done
 
 PokemartTellBuyPriceText:
-	TX_FAR _PokemartTellBuyPriceText
-	db "@"
+	TX_RAM wcf4b
+	text "ですね"
+	line "@"
+	TX_BCD hMoney, 3 | LEADING_ZEROES | LEFT_ALIGN
+	text "円に　なリますが？"
+	done
 
 PokemartBoughtItemText:
-	TX_FAR _PokemartBoughtItemText
-	db "@"
+	text "はい　どうぞ"
+	line "まいど　あリがとう　ございます"
+	prompt
 
 PokemartNotEnoughMoneyText:
-	TX_FAR _PokemartNotEnoughMoneyText
-	db "@"
+	text "おかねが　たリないようですね"
+	prompt
 
 PokemartItemBagFullText:
-	TX_FAR _PokemartItemBagFullText
-	db "@"
+	text "それいじょう　もちきれませんね"
+	line "いらないモノを　せいリしてください"
+	prompt
 
 PokemonSellingGreetingText:
-	TX_FAR _PokemonSellingGreetingText
-	db "@"
+	text "どれを　うっていただけますか？"
+	done
 
 PokemartTellSellPriceText:
-	TX_FAR _PokemartTellSellPriceText
-	db "@"
+	text "それでしたら　@"
+	TX_BCD hMoney, 3 | LEADING_ZEROES | LEFT_ALIGN
+	text "円で　"
+	line "おひきとリいたしましょう"
+	done
 
 PokemartItemBagEmptyText:
-	TX_FAR _PokemartItemBagEmptyText
-	db "@"
+	text "かいとれる　しなものは"
+	line "おもちで　ないようです"
+	prompt
 
 PokemartUnsellableItemText:
-	TX_FAR _PokemartUnsellableItemText
-	db "@"
+	text ""
+	sixdot
+	db "そのしなものに　おねだんを"
+	line "おつけするわけには　まいリません"
+	prompt
 
 PokemartThankYouText:
-	TX_FAR _PokemartThankYouText
-	db "@"
+	text "あリがとう　ございました"
+	done
 
 PokemartAnythingElseText:
-	TX_FAR _PokemartAnythingElseText
-	db "@"
+	text "そのほかに　わたくしどもで"
+	line "おちからに　なれることは？"
+	done

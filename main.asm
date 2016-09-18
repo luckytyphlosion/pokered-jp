@@ -58,10 +58,10 @@ INCLUDE "engine/oak_speech2.asm"
 
 INCLUDE "engine/subtract_paid_money.asm"
 
-HandleItemListSwapping:: ; 01:6ADF
-	dr $6ADF, $6BBB
-DisplayPokemartDialogue_:: ; 01:6BBB
-	dr $6BBB, $6EAB
+INCLUDE "engine/menu/swap_items.asm"
+
+INCLUDE "engine/overworld/pokemart.asm"
+
 LearnMove:: ; 01:6EAB
 	dr $6EAB, $7121
 DisplayPokemonCenterDialogue_:: ; 01:7121
