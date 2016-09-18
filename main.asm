@@ -75,8 +75,8 @@ CableClubNPC:: ; 01:736B
 	dr $736B, $754C
 CloseLinkConnection:: ; 01:754C
 	dr $754C, $755F
-ResetStatusAndHalveMoneyOnBlackout:: ; 01:755F
-	dr $755F, $75C1
+
+INCLUDE "engine/black_out.asm"
 
 INCLUDE "engine/load_mon_data.asm"
 
