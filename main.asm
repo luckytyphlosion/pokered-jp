@@ -85,8 +85,9 @@ INCLUDE "engine/battle/moveEffects/drain_hp_effect.asm"
 
 PlayerPC:: ; 01:7BF8
 	dr $7BF8, $7F19
-_RemovePokemon:: ; 01:7F19
-	dr $7F19, $7FC9
+
+INCLUDE "engine/remove_pokemon.asm"
+
 _DisplayPokedex:: ; 01:7FC9
 	dr $7FC9, $8000
 
