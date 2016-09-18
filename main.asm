@@ -64,10 +64,12 @@ INCLUDE "engine/overworld/pokemart.asm"
 
 INCLUDE "engine/learn_move.asm"
 
-DisplayPokemonCenterDialogue_:: ; 01:7121
-	dr $7121, $724B
-DisplayTextIDInit:: ; 01:724B
-	dr $724B, $72C0
+INCLUDE "engine/overworld/pokecenter.asm"
+
+INCLUDE "engine/overworld/set_blackout_map.asm"
+
+INCLUDE "engine/display_text_id_init.asm"
+
 DrawStartMenu:: ; 01:72C0
 	dr $72C0, $736B
 CableClubNPC:: ; 01:736B
@@ -604,7 +606,9 @@ Club_GFX:: ; 1B:7670
 
 SECTION "bank1C",ROMX,BANK[$1C]
 HallOfFamePC:: ; 1C:4000
-	dr $70000, $70A61
+	dr $70000, $70984
+AnimateHealingMachine:: ; 1C:4984
+	dr $70984, $70A61
 EnterMapAnim:: ; 1C:4A61
 	dr $70A61, $70B0B
 _LeaveMapAnim:: ; 1C:4B0B

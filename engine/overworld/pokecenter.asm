@@ -46,23 +46,31 @@ DisplayPokemonCenterDialogue_:
 	jp UpdateSprites
 
 PokemonCenterWelcomeText:
-	TX_FAR _PokemonCenterWelcomeText
-	db "@"
+	text "ようこそ！"
+	line "<PKMN>センターへ"
+	para "ここでは　<PKMN>の"
+	line "たいリょく　かいふくを　いたします"
+	prompt
 
 ShallWeHealYourPokemonText:
 	TX_DELAY
-	TX_FAR _ShallWeHealYourPokemonText
-	db "@"
+	text "モンスターボールを　"
+	line "おあずけに　なリますか？"
+	done
 
 NeedYourPokemonText:
-	TX_FAR _NeedYourPokemonText
-	db "@"
+	text "それでは"
+	line "あずからせて　いただきます！"
+	done
 
 PokemonFightingFitText:
-	TX_FAR _PokemonFightingFitText
-	db "@"
+	text "おまちどうさまでした！"
+	line "おあずかリした　<PKMN>は"
+	cont "みんな　げんきに　なリましたよ！"
+	prompt
 
 PokemonCenterFarewellText:
 	TX_DELAY
-	TX_FAR _PokemonCenterFarewellText
-	db "@"
+	text "またの"
+	line "ごリようを　おまちしてます！"
+	done
