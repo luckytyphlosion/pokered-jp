@@ -16,9 +16,10 @@ CableClub_DoBattleOrTrade:
 	coord hl, 4, 10
 	ld de, PleaseWaitString
 	call PlaceString
-	ld hl, wPlayerNumHits
 	xor a
+	ld hl, wPlayerNumHits
 	ld [hli], a
+	ld [wcce0], a
 	ld [hl], $50
 	; fall through
 
@@ -57,8 +58,8 @@ CableClub_DoBattleOrTradeAgain:
 	ld [hli], a
 	dec b
 	jr nz, .zeroPlayerDataPatchListLoop
-	ld hl, wGrassRate
-	ld bc, wTrainerHeaderPtr - wGrassRate
+	ld hl, wLinkEnemyTrainerName
+	ld bc, $13B ; XXX
 .zeroEnemyPartyLoop
 	xor a
 	ld [hli], a
@@ -101,6 +102,7 @@ CableClub_DoBattleOrTradeAgain:
 .finishedPatchingPlayerData
 	ld a, SERIAL_PATCH_LIST_PART_TERMINATOR
 	ld [de], a ; end of part 2
+	xor a
 	call Serial_SyncAndExchangeNybble
 	ld a, [hSerialConnectionStatus]
 	cp USING_INTERNAL_CLOCK
@@ -108,12 +110,12 @@ CableClub_DoBattleOrTradeAgain:
 ; if using internal clock
 ; send two zero bytes for syncing purposes?
 	call Delay3
-	xor a
+	ld a, [wcce0]
 	ld [hSerialSendData], a
 	ld a, START_TRANSFER_INTERNAL_CLOCK
 	ld [rSC], a
 	call DelayFrame
-	xor a
+	ld a, [wcce0]
 	ld [hSerialSendData], a
 	ld a, START_TRANSFER_INTERNAL_CLOCK
 	ld [rSC], a
@@ -129,7 +131,7 @@ CableClub_DoBattleOrTradeAgain:
 	ld [de], a
 	ld hl, wSerialPlayerDataBlock
 	ld de, wSerialEnemyDataBlock
-	ld bc, $1a8
+	ld bc, $167
 	call Serial_ExchangeBytes
 	ld a, SERIAL_NO_DATA_BYTE
 	ld [de], a
@@ -255,6 +257,22 @@ CableClub_DoBattleOrTradeAgain:
 	ld hl, wEnemyMons + (SERIAL_PREAMBLE_BYTE - 1)
 	dec c
 	jr nz, .unpatchEnemyMonsLoop
+	ld a, [wPlayerName]
+	cp $60
+	jr nz, .playerDataNotCorrupted
+	ld de, OneselfString
+	jr .corrupted
+.playerDataNotCorrupted
+	ld a, [wLinkEnemyTrainerName]
+	cp $60
+	jr nz, .parterDataNotCorrupted
+	ld de, PartnerString
+.corrupted
+	call CopyStringToCF4B
+	ld hl, DataCorruptedString
+	call PrintText
+	jr @ ; spin
+.parterDataNotCorrupted
 	ld a, wEnemyMonOT % $100
 	ld [wUnusedCF8D], a
 	ld a, wEnemyMonOT / $100
@@ -289,8 +307,24 @@ CableClub_DoBattleOrTradeAgain:
 	call PlayMusic
 	jr CallCurrentTradeCenterFunction
 
+DataCorruptedString:
+	TX_RAM wcf4b
+	text "の　データが"
+	line "こわれています！"
+	db $4b ; FIXME
+	db "でんげんを　きって"
+	db $4c ; FIXME
+	db "やリなおしてください。"
+	done
+
+OneselfString:
+	db "じぶん@"
+
+PartnerString:
+	db "あいて@"
+
 PleaseWaitString:
-	db "PLEASE WAIT!@"
+	db "つうしんじゅんびちゅう！@"
 
 CallCurrentTradeCenterFunction:
 	ld hl, TradeCenterPointerTable
@@ -333,30 +367,16 @@ TradeCenter_SelectMon:
 	ld [wMenuWatchedKeys], a
 	ld a, [wEnemyPartyCount]
 	ld [wMaxMenuItem], a
-	ld a, 9
+	ld a, 3
 	ld [wTopMenuItemY], a
-	ld a, 1
+	ld a, 12
 	ld [wTopMenuItemX], a
 .enemyMonMenu_HandleInput
-	ld hl, hFlags_0xFFF6
-	set 1, [hl]
 	call HandleMenuInput
-	ld hl, hFlags_0xFFF6
-	res 1, [hl]
 	and a
 	jp z, .getNewInput
 	bit 0, a ; A button pressed?
 	jr z, .enemyMonMenu_ANotPressed
-; if A button pressed
-	ld a, [wMaxMenuItem]
-	ld c, a
-	ld a, [wCurrentMenuItem]
-	cp c
-	jr c, .displayEnemyMonStats
-	ld a, [wMaxMenuItem]
-	dec a
-	ld [wCurrentMenuItem], a
-.displayEnemyMonStats
 	ld a, INIT_ENEMYOT_LIST
 	ld [wInitListType], a
 	callab InitList ; the list isn't used
@@ -395,19 +415,12 @@ TradeCenter_SelectMon:
 	ld [wMenuWatchedKeys], a
 	ld a, [wPartyCount]
 	ld [wMaxMenuItem], a
-	ld a, 1
+	ld a, 3
 	ld [wTopMenuItemY], a
-	ld a, 1
+	ld a, 2
 	ld [wTopMenuItemX], a
-	coord hl, 1, 1
-	lb bc, 6, 1
-	call ClearScreenArea
 .playerMonMenu_HandleInput
-	ld hl, hFlags_0xFFF6
-	set 1, [hl]
 	call HandleMenuInput
-	ld hl, hFlags_0xFFF6
-	res 1, [hl]
 	and a ; was anything pressed?
 	jr nz, .playerMonMenu_SomethingPressed
 	jp .getNewInput
@@ -455,14 +468,7 @@ TradeCenter_SelectMon:
 .chosePlayerMon
 	call SaveScreenTilesToBuffer1
 	call PlaceUnfilledArrowMenuCursor
-	ld a, [wMaxMenuItem]
-	ld c, a
 	ld a, [wCurrentMenuItem]
-	cp c
-	jr c, .displayStatsTradeMenu
-	ld a, [wMaxMenuItem]
-	dec a
-.displayStatsTradeMenu
 	push af
 	coord hl, 0, 14
 	ld b, 2
@@ -533,7 +539,7 @@ TradeCenter_SelectMon:
 	ld [wTradeCenterPointerTableIndex], a
 	jp CallCurrentTradeCenterFunction
 .statsTrade
-	db "STATS     TRADE@"
+	db "ステイタスをみる　　こうかんにだす@"
 .selectedCancelMenuItem
 	ld a, [wCurrentMenuItem]
 	ld b, a
@@ -551,7 +557,7 @@ TradeCenter_SelectMon:
 	Coorda 1, 16
 .cancelMenuItem_JoypadLoop
 	call JoypadLowSensitivity
-	ld a, [$ffb5]
+	lda hJoy5
 	and a ; pressed anything?
 	jr z, .cancelMenuItem_JoypadLoop
 	bit 0, a ; A button pressed?
@@ -609,12 +615,12 @@ TradeCenter_DrawCancelBox:
 	jp PlaceString
 
 CancelTextString:
-	db "CANCEL@"
+	db "こうかんちゅうし@"
 
 TradeCenter_PlaceSelectedEnemyMonMenuCursor:
 	ld a, [wSerialSyncAndExchangeNybbleReceiveData]
-	coord hl, 1, 9
-	ld bc, SCREEN_WIDTH
+	coord hl, 12, 3
+	ld bc, SCREEN_WIDTH * 2
 	call AddNTimes
 	ld [hl], "▷" ; cursor
 	ret
@@ -630,24 +636,24 @@ TradeCenter_DisplayStats:
 	jp TradeCenter_DrawCancelBox
 
 TradeCenter_DrawPartyLists:
-	coord hl, 0, 0
-	ld b, 6
-	ld c, 18
+	coord hl, 0, 1
+	ld b, 12
+	ld c, 8
 	call CableClub_TextBoxBorder
-	coord hl, 0, 8
-	ld b, 6
-	ld c, 18
+	coord hl, 10, 1
+	ld b, 12
+	ld c, 8
 	call CableClub_TextBoxBorder
-	coord hl, 5, 0
+	coord hl, 3, 1
 	ld de, wPlayerName
 	call PlaceString
-	coord hl, 5, 8
+	coord hl, 13, 1
 	ld de, wLinkEnemyTrainerName
 	call PlaceString
-	coord hl, 2, 1
+	coord hl, 3, 3
 	ld de, wPartySpecies
 	call TradeCenter_PrintPartyListNames
-	coord hl, 2, 9
+	coord hl, 13, 3
 	ld de, wEnemyPartyMons
 	; fall through
 
@@ -670,7 +676,7 @@ TradeCenter_PrintPartyListNames:
 	pop de
 	inc de
 	pop hl
-	ld bc, 20
+	ld bc, SCREEN_WIDTH * 2
 	add hl, bc
 	pop bc
 	inc c
@@ -837,7 +843,7 @@ TradeCenter_Trade:
 	call LoadHpBarAndStatusTilePatterns
 	xor a
 	ld [wUnusedCC5B], a
-	ld a, [hSerialConnectionStatus]
+	lda hSerialConnectionStatus
 	cp USING_EXTERNAL_CLOCK
 	jr z, .usingExternalClock
 	predef InternalClockTradeAnim
@@ -872,15 +878,19 @@ TradeCenter_Trade:
 	jp CallCurrentTradeCenterFunction
 
 WillBeTradedText:
-	TX_FAR _WillBeTradedText
-	db "@"
+	TX_RAM wNameOfPlayerMonToBeTraded
+	text "　と　@"
+	TX_RAM wcd6d
+	text "　を"
+	line "こうかんします"
+	done
 
 TradeCompleted:
-	db "Trade completed!@"
+	db "こうかんしゅうリょう！@"
 
 TradeCanceled:
-	db   "Too bad! The trade"
-	next "was canceled!@"
+	db   "ざんねんながら"
+	next "こうかんは　キャンセルされました@"
 
 TradeCenterPointerTable:
 	dw TradeCenter_SelectMon
@@ -914,7 +924,7 @@ CableClub_Run:
 	ld [wGrassRate], a
 	inc a ; LINK_STATE_IN_CABLE_CLUB
 	ld [wLinkState], a
-	ld [$ffb5], a
+	sta hJoy5
 	ld a, 10
 	ld [wAudioFadeOutControl], a
 	ld a, BANK(Music_Celadon)
@@ -969,3 +979,9 @@ CableClub_DrawHorizontalLine:
 	dec d
 	jr nz, .loop
 	ret
+
+LoadTrainerInfoTextBoxTiles:
+	ld de, TrainerInfoTextBoxTileGraphics
+	ld hl, vChars2 + $760
+	lb bc, BANK(TrainerInfoTextBoxTileGraphics), (TrainerInfoTextBoxTileGraphicsEnd - TrainerInfoTextBoxTileGraphics) / $10
+	jp CopyVideoData

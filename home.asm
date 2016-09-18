@@ -114,9 +114,7 @@ HideSprites::
 	ret
 
 INCLUDE "home/copy.asm"
-
-	dr $1C4, $28C
-
+INCLUDE "data/collision.asm"
 INCLUDE "home/copy2.asm"
 INCLUDE "home/text.asm"
 INCLUDE "home/vcopy.asm"

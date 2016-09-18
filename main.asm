@@ -13,7 +13,6 @@ PICS_3 EQU $B
 PICS_4 EQU $C
 PICS_5 EQU $D
 
-
 INCLUDE "home.asm"
 
 
@@ -27,49 +26,22 @@ INCLUDE "data/baseStats/mew.asm"
 
 INCLUDE "data/item_prices.asm"
 INCLUDE "text/item_names.asm"
-
-UnusedNames::
-	db "かみなりバッヂ@"
-	db "かいがらバッヂ@"
-	db "おじぞうバッヂ@"
-	db "はやぶさバッヂ@"
-	db "ひんやりバッヂ@"
-	db "なかよしバッヂ@"
-	db "バラバッヂ@"
-	db "ひのたまバッヂ@"
-	db "ゴールドバッヂ@"
-	db "たまご@"
-	db "ひよこ@"
-	db "ブロンズ@"
-	db "シルバー@"
-	db "ゴールド@"
-	db "プチキャプテン@"
-	db "キャプテン@"
-	db "プチマスター@"
-	db "マスター@"
-	db "エクセレント"
+INCLUDE "text/unused_names.asm"
 
 INCLUDE "engine/overworld/oam.asm"
 INCLUDE "engine/oam_dma.asm"
 INCLUDE "engine/titlescreen.asm"
 
-NintenText: db "やまぐち@"
-SonyText:   db "いしはら@"
+INCLUDE "engine/print_waiting_text.asm"
 
-PrintWaitingText:: ; 49ED
-	dr $49ED, $4A1C
+INCLUDE "engine/overworld/map_sprite_functions1.asm"
 
-_UpdateSprites:: ; 4A1C
-	dr $4A1C, $4BC7
+INCLUDE "engine/test_battle.asm"
 
-PickUpItem:: ; 01:4BC7
-	dr $4BC7, $5889
-CableClub_Run:: ; 01:5889
-	dr $5889, $58DA
-EmptyFunc3:: ; 01:58DA
-	dr $58DA, $58DB
-Diploma_TextBoxBorder:: ; 01:58DB
-	dr $58DB, $591D
+INCLUDE "engine/overworld/item.asm"
+INCLUDE "engine/overworld/movement.asm"
+INCLUDE "engine/cable_club.asm"
+
 MainMenu:: ; 01:591D
 	dr $591D, $5BB6
 SpecialEnterMap:: ; 01:5BB6
@@ -98,8 +70,10 @@ CableClubNPC:: ; 01:736B
 	dr $736B, $755F
 ResetStatusAndHalveMoneyOnBlackout:: ; 01:755F
 	dr $755F, $75C1
-LoadMonData_:: ; 01:75C1
-	dr $75C1, $766C
+
+INCLUDE "engine/load_mon_data.asm"
+
+	dr $7613, $766C
 DisplayTextBoxID_:: ; 01:766C
 	dr $766C, $7BF8
 PlayerPC:: ; 01:7BF8
@@ -390,8 +364,12 @@ SECTION "bankA",ROMX,BANK[$A]
 INCBIN "baserom.gbc", $4000 * $A, $4000
 
 SECTION "bankB",ROMX,BANK[$B]
-INCBIN "baserom.gbc", $4000 * $B, $3EE3
+INCBIN "baserom.gbc", $4000 * $B, $3BF6
 
+TrainerInfoTextBoxTileGraphics:: ; 0B:7BF6
+	dr $2FBF6, $2FC86
+TrainerInfoTextBoxTileGraphicsEnd:: ; 0B:7C86
+	dr $2FC86, $2FEE3
 ScaleSpriteByTwo:: ; 0B:7EE3
 	dr $2FEE3, $4000 * $C
 
@@ -420,9 +398,16 @@ INCLUDE "data/cries.asm"
 INCLUDE "engine/battle/trainer_pic_money_pointers.asm"
 INCLUDE "text/trainer_names.asm"
 
-	dr $39E5F, $3AD11
+	dr $39E5F, $39EAD
+
+InitList:: ; 0E:5EAD
+	dr $39EAD, $39F0F
+GetMonSpecies:: ; 0E:5F0F
+	dr $39F0F, $3AD11
 PokeballTileGraphics:: ; 0E:6D11
-	dr $3AD11, $3B0AF
+	dr $3AD11, $3B0A1
+TryEvolvingMon:: ; 0E:70A1
+	dr $3B0A1, $3B0AF
 EvolutionAfterBattle:: ; 0E:70AF
 	dr $3B0AF, $3B326
 LearnMoveFromLevelUp:: ; 0E:7326
@@ -599,7 +584,10 @@ Version_GFXEnd:: ; 1A:4050
 	dr $68050, $4000 * $1B
 
 SECTION "bank1B",ROMX,BANK[$1B]
-INCBIN "baserom.gbc", $4000 * $1B, $4000
+INCBIN "baserom.gbc", $4000 * $1B, $3670
+
+Club_GFX:: ; 1B:7670
+	dr $6F670, $70000
 
 SECTION "bank1C",ROMX,BANK[$1C]
 HallOfFamePC:: ; 1C:4000

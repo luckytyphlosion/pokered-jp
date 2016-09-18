@@ -45,10 +45,13 @@ PickUpItem:
 	ret
 
 FoundItemText:
-	TX_FAR _FoundItemText
+	text "<PLAYER>は"
+	line "@"
+	TX_RAM wcf4b
+	text "を　みつけた！@"
 	TX_SFX_ITEM_1
 	db "@"
 
 NoMoreRoomForItemText:
-	TX_FAR _NoMoreRoomForItemText
-	db "@"
+	text "もちものが　いっぱい！"
+	done

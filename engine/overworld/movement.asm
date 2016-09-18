@@ -652,7 +652,8 @@ CanWalkOntoTile:
 	bit 7, e           ; check if going left (e=$ff)
 	jr nz, .left
 	add e
-	cp $5              ; compare, but no conditional jump like in the vertical check above (bug?)
+	cp $5              ; compare (in the US version, there is no conditional jump (bugfix); what about JP Blue?)
+	jr c, .impassable
 	jr .passable
 .left
 	sub $1

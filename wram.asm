@@ -665,6 +665,7 @@ wAICount:: ; ccdf
 ; number of times remaining that AI action can occur
 	ds 1
 
+wcce0:: ; cce0
 	ds 2
 
 wEnemyMoveListIndex:: ; cce2
@@ -1102,6 +1103,8 @@ wTempCoins1:: ; cd46
 wSlotMachineWheel2TopTile:: ; cd46
 	ds 1
 
+wTradedPlayerMonOTID:: ; cd47
+
 wBattleTransitionSpiralDirection:: ; cd47
 ; 0 = outward, 1 = inward
 
@@ -1115,6 +1118,8 @@ wFacingDirectionList:: ; cd48
 ;          variable when the list is rotated)
 ; used when spinning the player's sprite
 	ds 1
+
+wTradedEnemyMonOT:: ; cd49
 
 wSlotMachineWheel3TopTile:: ; cd49
 
@@ -1132,8 +1137,6 @@ wPayoutCoins:: ; cd4a
 ; 2 bytes
 	ds 2
 
-wTradedPlayerMonOTID:: ; cd4c
-
 wSlotMachineFlags:: ; cd4c
 ; These flags are set randomly and control when the wheels stop.
 ; bit 6: allow the player to win in general
@@ -1150,8 +1153,6 @@ wCutTile:: ; cd4d
 
 wSlotMachineWheel2SlipCounter:: ; cd4e
 ; wheel 2 can "slip" while this is non-zero
-
-wTradedEnemyMonOT:: ; cd4e
 	ds 1
 
 wSavedPlayerScreenY:: ; cd4f
