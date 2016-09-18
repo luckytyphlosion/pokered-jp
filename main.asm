@@ -40,18 +40,23 @@ INCLUDE "engine/test_battle.asm"
 
 INCLUDE "engine/overworld/item.asm"
 INCLUDE "engine/overworld/movement.asm"
+
 INCLUDE "engine/cable_club.asm"
 
-MainMenu:: ; 01:591D
-	dr $591D, $5BB6
-SpecialEnterMap:: ; 01:5BB6
-	dr $5BB6, $6233
+INCLUDE "engine/menu/main_menu.asm"
+
+	dr $5F0E, $5F59
+
+OakSpeech:: ; 01:5F59
+	dr $5F59, $6233
 DisplayPicCenteredOrUpperRight:: ; 01:6233
 	dr $6233, $6260
 SpecialWarpIn:: ; 01:6260
 	dr $6260, $6479
 AskName:: ; 01:6479
-	dr $6479, $6ABC
+	dr $6479, $6ABB
+TextTerminator_6b20:: ; 01:6ABB
+	dr $6ABB, $6ABC
 SubtractAmountPaidFromMoney_:: ; 01:6ABC
 	dr $6ABC, $6ADF
 HandleItemListSwapping:: ; 01:6ADF
@@ -67,7 +72,9 @@ DisplayTextIDInit:: ; 01:724B
 DrawStartMenu:: ; 01:72C0
 	dr $72C0, $736B
 CableClubNPC:: ; 01:736B
-	dr $736B, $755F
+	dr $736B, $754C
+CloseLinkConnection:: ; 01:754C
+	dr $754C, $755F
 ResetStatusAndHalveMoneyOnBlackout:: ; 01:755F
 	dr $755F, $75C1
 
