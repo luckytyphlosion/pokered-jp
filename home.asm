@@ -56,10 +56,10 @@ Start::
 Joypad::
 	ld a, [H_LOADEDROMBANK]
 	push af
-	ld a, $3
+	ld a, Bank(ReadJoypad)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
-	call $4000
+	call ReadJoypad
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

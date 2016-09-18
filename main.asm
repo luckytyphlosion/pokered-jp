@@ -92,7 +92,10 @@ INCLUDE "engine/display_pokedex.asm"
 	dr $7FFA, $8000
 
 SECTION "bank3",ROMX,BANK[$3]
-INCBIN "baserom.gbc", $4000 * $3, $529
+
+INCLUDE "engine/joypad.asm"
+
+	dr $C085, $C529
 
 PrintStrengthTxt:: ; 03:4529
 	dr $C529, $C5E2

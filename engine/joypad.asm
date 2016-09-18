@@ -1,11 +1,35 @@
-_Joypad::
-; hJoyReleased: (hJoyLast ^ hJoyInput) & hJoyLast
-; hJoyPressed:  (hJoyLast ^ hJoyInput) & hJoyInput
+ReadJoypad::
+; Poll joypad input.
+; Unlike the hardware register, button
+; presses are indicated by a set bit.
 
-	ld a, [hJoyInput]
+	ld a, 1 << 5 ; select direction keys
+	ld c, 0
+
+	ld [rJOYP], a
+	rept 6
+	ld a, [rJOYP]
+	endr
+	cpl
+	and %1111
+	swap a
+	ld b, a
+
+	ld a, 1 << 4 ; select button keys
+	ld [rJOYP], a
+	rept 10
+	ld a, [rJOYP]
+	endr
+	cpl
+	and %1001111
 	cp A_BUTTON + B_BUTTON + SELECT + START ; soft reset
-	jp z, TrySoftReset
+	jr nz, .noSoftReset
+	jp TrySoftReset
 
+.noSoftReset
+; hJoyReleased <- (hJoyLast ^ input) & hJoyLast
+; hJoyPressed  <- (hJoyLast ^ input) & input
+	or b
 	ld b, a
 	ld a, [hJoyLast]
 	ld e, a
@@ -16,6 +40,10 @@ _Joypad::
 	ld a, d
 	and b
 	ld [hJoyPressed], a
+
+	ld a, 1 << 4 + 1 << 5 ; deselect keys
+	ld [rJOYP], a
+
 	ld a, b
 	ld [hJoyLast], a
 
