@@ -233,10 +233,10 @@ DisplayNamingScreen:
 	ld [wNamingScreenLetter], a
 	call CalcStringLength
 	ld a, [wNamingScreenLetter]
-	cp $e5
+	cp "ﾞ"
 	ld de, Dakutens
 	jr z, .dakutensAndHandakutens
-	cp $e4
+	cp "ﾟ"
 	ld de, Handakutens
 	jr z, .dakutensAndHandakutens
 	ld a, [wNamingScreenNameLength]
@@ -363,10 +363,10 @@ PrintAlphabet:
 	jp Delay3
 
 Hiragana:
-	db "あかさたなはまやらいきしちにひみゆリうくすつぬふむよるえけせてねへめわれおこそとのほもんろゃゅょっﾟﾞー　円カナ@"
+	db "あかさたなはまやらいきしちにひみゆリうくすつぬふむよるえけせてねへめわれおこそとのほもんろゃゅょっﾞﾟー　円カナ@"
 
 Katakana:
-	db "アカサタナハマヤライキシチニヒミユリウクスツヌフムヨルエケセテネヘメワレオコソトノホモンロャュョッﾟﾞー　円かな@"
+	db "アカサタナハマヤライキシチニヒミユリウクスツヌフムヨルエケセテネヘメワレオコソトノホモンロャュョッﾞﾟー　円かな@"
 
 InputString:
 	db "にゅうリょく@"

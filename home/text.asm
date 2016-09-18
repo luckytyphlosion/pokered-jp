@@ -102,55 +102,62 @@ endm
 	dict $58, Char58 ; prompt
 	dict $59, Char59 ; TARGET
 	dict $5A, Char5A ; USER
-	cp $E4
-	jr z, .asm_484
-	cp $E5
-	jr nz, .asm_48d
-.asm_484
+
+	; check if the current character is a combining character
+	; (i.e. a character that modifies another character)
+	cp "ﾟ"
+	jr z, .placeCombiningChar
+	cp "ﾞ"
+	jr nz, .precomposedChar
+.placeCombiningChar
 	push hl
 	ld bc, -SCREEN_WIDTH
 	add hl, bc
 	ld [hl], a
 	pop hl
 	jr PlaceNextChar_inc
-.asm_48d
+.precomposedChar
+	; not a combining character
+	; if x ≥ $60, it doesn't have a dakuten/handakuten
 	cp $60
-	jr nc, .asm_4c1
+	jr nc, .placeChar
+	; if $40 ≤ x < $60, it has a handakuten
 	cp $40
-	jr nc, .asm_4ac
+	jr nc, .handakuten
+	; if x < $40, it has a dakuten
 	cp $20
-	jr nc, .asm_49d
+	jr nc, .dakuten_90
 	add $80
-	jr .asm_49f
-.asm_49d
+	jr .placeDakuten
+.dakuten_90
 	add $90
-.asm_49f
+.placeDakuten
 	push af
-	ld a, $e5
+	ld a, "ﾞ"
 	push hl
 	ld bc, -SCREEN_WIDTH
 	add hl, bc
 	ld [hl], a
 	pop hl
 	pop af
-	jr .asm_4c1
-.asm_4ac
+	jr .placeChar
+.handakuten
 	cp $44
-	jr nc, .asm_4b4
+	jr nc, .handakuten_86
 	add $59
-	jr .asm_4b6
-.asm_4b4
+	jr .placeHandakuten
+.handakuten_86
 	add $86
-.asm_4b6
+.placeHandakuten
 	push af
-	ld a, $e4
+	ld a, "ﾟ"
 	push hl
 	ld bc, -SCREEN_WIDTH
 	add hl, bc
 	ld [hl], a
 	pop hl
 	pop af
-.asm_4c1
+.placeChar
 	ld [hli],a
 	call PrintLetterDelay
 PlaceNextChar_inc::

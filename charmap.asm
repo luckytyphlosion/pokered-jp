@@ -148,8 +148,8 @@ charmap "ゃ", $E0
 charmap "ゅ", $E1
 charmap "ょ", $E2
 charmap "ー", $E3
-charmap "ﾞ", $E4
-charmap "ﾟ", $E5
+charmap "ﾟ", $E4
+charmap "ﾞ", $E5
 charmap "？", $E6
 charmap "！", $E7
 charmap "。", $E8
