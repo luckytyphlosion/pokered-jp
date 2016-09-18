@@ -69,9 +69,8 @@ INCLUDE "engine/overworld/pokecenter.asm"
 INCLUDE "engine/overworld/set_blackout_map.asm"
 
 INCLUDE "engine/display_text_id_init.asm"
+INCLUDE "engine/menu/draw_start_menu.asm"
 
-DrawStartMenu:: ; 01:72C0
-	dr $72C0, $736B
 CableClubNPC:: ; 01:736B
 	dr $736B, $754C
 CloseLinkConnection:: ; 01:754C
