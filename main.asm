@@ -71,10 +71,7 @@ INCLUDE "engine/overworld/set_blackout_map.asm"
 INCLUDE "engine/display_text_id_init.asm"
 INCLUDE "engine/menu/draw_start_menu.asm"
 
-CableClubNPC:: ; 01:736B
-	dr $736B, $754C
-CloseLinkConnection:: ; 01:754C
-	dr $754C, $755F
+INCLUDE "engine/overworld/cable_club_npc.asm"
 
 INCLUDE "engine/black_out.asm"
 
@@ -651,7 +648,9 @@ SaveSAVtoSRAM0:: ; 1C:7C26
 SaveSAVtoSRAM1:: ; 1C:7C7D
 	dr $73C7D, $73CAA
 SaveSAVtoSRAM2:: ; 1C:7CAA
-	dr $73CAA, $73D1B
+	dr $73CAA, $73CE3
+SaveSAVtoSRAM:: ; 1C:7CE3
+	dr $73CE3, $73D1B
 ChangeBox:: ; 1C:7D1B
 	dr $73D1B, $4000 * $1D
 
