@@ -62,8 +62,8 @@ INCLUDE "engine/menu/swap_items.asm"
 
 INCLUDE "engine/overworld/pokemart.asm"
 
-LearnMove:: ; 01:6EAB
-	dr $6EAB, $7121
+INCLUDE "engine/learn_move.asm"
+
 DisplayPokemonCenterDialogue_:: ; 01:7121
 	dr $7121, $724B
 DisplayTextIDInit:: ; 01:724B
@@ -402,14 +402,15 @@ BaseStats:: ; 0E:4000
 
 INCLUDE "text/monster_names.asm"
 INCLUDE "data/cries.asm"
+INCLUDE "data/moves.asm"
 
-	dr $39658, $39C31
+	dr $39A36, $39C31
 
 INCLUDE "engine/battle/trainer_pic_money_pointers.asm"
 INCLUDE "text/trainer_names.asm"
 
+FormatMovesString:: ; 0E:5E5F
 	dr $39E5F, $39EAD
-
 InitList:: ; 0E:5EAD
 	dr $39EAD, $39F0F
 GetMonSpecies:: ; 0E:5F0F

@@ -120,23 +120,17 @@ TryingToLearn:
 	push hl
 	ld hl, WhichMoveToForgetText
 	call PrintText
-	coord hl, 4, 7
-	ld b, 4
-	ld c, 14
+	coord hl, 10, 8
+	ld b, 8
+	ld c, 8
 	call TextBoxBorder
-	coord hl, 6, 8
+	coord hl, 12, 10
 	ld de, wMovesString
-	ld a, [hFlags_0xFFF6]
-	set 2, a
-	ld [hFlags_0xFFF6], a
 	call PlaceString
-	ld a, [hFlags_0xFFF6]
-	res 2, a
-	ld [hFlags_0xFFF6], a
 	ld hl, wTopMenuItemY
-	ld a, 8
+	ld a, 10
 	ld [hli], a ; wTopMenuItemY
-	ld a, 5
+	ld a, 11
 	ld [hli], a ; wTopMenuItemX
 	xor a
 	ld [hli], a ; wCurrentMenuItem
@@ -146,11 +140,7 @@ TryingToLearn:
 	ld a, A_BUTTON | B_BUTTON
 	ld [hli], a ; wMenuWatchedKeys
 	ld [hl], 0 ; wLastMenuItem
-	ld hl, hFlags_0xFFF6
-	set 1, [hl]
 	call HandleMenuInput
-	ld hl, hFlags_0xFFF6
-	res 1, [hl]
 	push af
 	call LoadScreenTilesFromBuffer1
 	pop af
@@ -184,29 +174,59 @@ TryingToLearn:
 	ret
 
 LearnedMove1Text:
-	TX_FAR _LearnedMove1Text
+	TX_RAM wLearnMoveMonName
+	text "は　あたらしく"
+	line "@"
+	TX_RAM wcf4b
+	text "を　おぼえた！@"
 	TX_SFX_ITEM_1 ; plays SFX_GET_ITEM_1 in the pary menu (rare candy) and plays SFX_LEVEL_UP in battle
 	TX_BLINK
 	db "@"
 
 WhichMoveToForgetText:
-	TX_FAR _WhichMoveToForgetText
-	db "@"
+	text "どの　わざを"
+	next "わすれさせたい？"
+	done
 
 AbandonLearningText:
-	TX_FAR _AbandonLearningText
-	db "@"
+	text "それでは"
+	sixdot
+	db " @"
+	TX_RAM wcf4b
+	text "を"
+	line "おぼえるのを　あきらめますか？"
+	done
 
 DidNotLearnText:
-	TX_FAR _DidNotLearnText
-	db "@"
+	TX_RAM wLearnMoveMonName
+	text "は　@"
+	TX_RAM wcf4b
+	text "を"
+	line "おぼえずに　おわった！"
+	prompt
 
 TryingToLearnText:
-	TX_FAR _TryingToLearnText
-	db "@"
+	TX_RAM wLearnMoveMonName
+	text "は　あたらしく"
+	line "@"
+	TX_RAM wcf4b
+	text "を　おぼえたい"
+	sixdot
+	db "！"
+	para "しかし　@"
+	TX_RAM wLearnMoveMonName
+	text "は　わざを　4つ"
+	line "おぼえるので　せいいっぱいだ！"
+	para "@"
+	TX_RAM wcf4b
+	text "の　かわリに"
+	line "ほかの　わざを　わすれさせますか？"
+	done
 
 OneTwoAndText:
-	TX_FAR _OneTwoAndText
+	text "1　2の　"
+	sixdot
+	db "@"
 	TX_DELAY
 	TX_ASM
 	ld a, SFX_SWAP
@@ -215,12 +235,22 @@ OneTwoAndText:
 	ret
 
 PoofText:
-	TX_FAR _PoofText
+	text "　ポカン！@"
 	TX_DELAY
 ForgotAndText:
-	TX_FAR _ForgotAndText
-	db "@"
+	text ""
+	para "@"
+	TX_RAM wLearnMoveMonName
+	text "は　@"
+	TX_RAM wcd6d
+	text "の"
+	line "つかいかたを　きれいに　わすれた！"
+	para "そして"
+	sixdot
+	db "！"
+	prompt
 
 HMCantDeleteText:
-	TX_FAR _HMCantDeleteText
-	db "@"
+	text "それは　たいせつなわざです"
+	line "わすれさせることは　できません！"
+	prompt
