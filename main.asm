@@ -77,9 +77,12 @@ INCLUDE "engine/black_out.asm"
 
 INCLUDE "engine/load_mon_data.asm"
 
-	dr $7613, $766C
-DisplayTextBoxID_:: ; 01:766C
-	dr $766C, $7BF8
+INCLUDE "engine/battle/safari_zone.asm"
+
+INCLUDE "engine/menu/text_box.asm"
+
+INCLUDE "engine/battle/moveEffects/drain_hp_effect.asm"
+
 PlayerPC:: ; 01:7BF8
 	dr $7BF8, $7F19
 _RemovePokemon:: ; 01:7F19
@@ -428,7 +431,9 @@ SECTION "bankF",ROMX,BANK[$F]
 INCBIN "baserom.gbc", $4000 * $F, $BA3
 
 AnyPartyAlive:: ; 0F:4BA3
-	dr $3CBA3, $3CEBE
+	dr $3CBA3, $3CEA1
+ReadPlayerMonCurHPAndStatus:: ; 0F:4EA1
+	dr $3CEA1, $3CEBE
 DrawPlayerHUDAndHPBar:: ; 0F:4EBE
 	dr $3CEBE, $3CF49
 DrawEnemyHUDAndHPBar:: ; 0F:4F49
