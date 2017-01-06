@@ -158,8 +158,7 @@ GroundRoseText::
 	done
 
 BoulderText::
-	text "「かいりき」　で　うごかせるかも"
-	sixdot
+	text "「かいりき」　で　うごかせるかも<……>"
 	done
 
 MartSignText::

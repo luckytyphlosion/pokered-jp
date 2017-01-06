@@ -269,9 +269,7 @@ PokemartItemBagEmptyText:
 	prompt
 
 PokemartUnsellableItemText:
-	text ""
-	sixdot
-	db "そのしなものに　おねだんを"
+	text "<……>そのしなものに　おねだんを"
 	line "おつけするわけには　まいリません"
 	prompt
 

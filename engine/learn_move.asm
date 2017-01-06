@@ -189,8 +189,7 @@ WhichMoveToForgetText:
 	done
 
 AbandonLearningText:
-	text "それでは"
-	sixdot
+	text "それでは<……>"
 	db " @"
 	TX_RAM wcf4b
 	text "を"
@@ -210,8 +209,7 @@ TryingToLearnText:
 	text "は　あたらしく"
 	line "@"
 	TX_RAM wcf4b
-	text "を　おぼえたい"
-	sixdot
+	text "を　おぼえたい<……>"
 	db "！"
 	para "しかし　@"
 	TX_RAM wLearnMoveMonName
@@ -224,8 +222,7 @@ TryingToLearnText:
 	done
 
 OneTwoAndText:
-	text "1　2の　"
-	sixdot
+	text "1　2の　<……>"
 	db "@"
 	TX_DELAY
 	TX_ASM
@@ -245,8 +242,7 @@ ForgotAndText:
 	TX_RAM wcd6d
 	text "の"
 	line "つかいかたを　きれいに　わすれた！"
-	para "そして"
-	sixdot
+	para "そして<……>"
 	db "！"
 	prompt
 

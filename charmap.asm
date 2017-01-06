@@ -182,6 +182,7 @@ charmap "@", $50
 charmap "<PLAYER>", $52
 charmap "<RIVAL>", $53
 charmap "<PKMN>", $54 ; ポケモン
+charmap "<……>", $56
 charmap "<TARGET>", $59
 charmap "<USER>", $5A
 charmap "<PC>", $5B ; パソコン

@@ -95,38 +95,20 @@ SECTION "bank3",ROMX,BANK[$3]
 
 INCLUDE "engine/joypad.asm"
 
-	dr $C085, $C529
+INCLUDE "data/hide_show_data.asm"
 
-PrintStrengthTxt:: ; 03:4529
-	dr $C529, $C5E2
-AddItemToInventory_:: ; 03:45E2
-	dr $C5E2, $C652
-RemoveItemFromInventory_:: ; 03:4652
-	dr $C652, $C693
-MapSongBanks:: ; 03:4693
-	dr $C693, $C883
+INCLUDE "engine/overworld/field_move_messages.asm"
+
+INCLUDE "engine/items/inventory.asm"
+
+INCLUDE "data/map_songs.asm"
+
 MapHeaderBanks:: ; 03:4883
 	dr $C883, $C97B
-ClearVariablesAfterLoadingMapData:: ; 03:497B
-	dr $C97B, $C9A5
-IsPlayerStandingOnWarp:: ; 03:49A5
-	dr $C9A5, $C9D1
-CheckForceBikeOrSurf:: ; 03:49D1
-	dr $C9D1, $CA45
-IsPlayerFacingEdgeOfMap:: ; 03:4A45
-	dr $CA45, $CA94
-IsWarpTileInFrontOfPlayer:: ; 03:4A94
-	dr $CA94, $CAE3
-IsPlayerStandingOnDoorTileOrWarpTile:: ; 03:4AE3
-	dr $CAE3, $CB75
-PrintSafariZoneSteps:: ; 03:4B75
-	dr $CB75, $CBBF
-GetTileAndCoordsInFrontOfPlayer:: ; 03:4BBF
-	dr $CBBF, $CBF7
-GetTileTwoStepsInFrontOfPlayer:: ; 03:4BF7
-	dr $CBF7, $CC44
-CheckForCollisionWhenPushingBoulder:: ; 03:4C44
-	dr $CC44, $CCD5
+
+INCLUDE "engine/overworld/clear_variables.asm"
+INCLUDE "engine/overworld/player_state.asm"
+
 ApplyOutOfBattlePoisonDamage:: ; 03:4CD5
 	dr $CCD5, $CD8D
 LoadTilesetHeader:: ; 03:4D8D
@@ -346,7 +328,9 @@ PewterMuseumGuyMovementScriptPointerTable:: ; 06:7DC8
 PewterGymGuyMovementScriptPointerTable:: ; 06:7E35
 	dr $1BE35, $1BE9F
 FreezeEnemyTrainerSprite:: ; 06:7E9F
-	dr $1BE9F, $1BF2A
+	dr $1BE9F, $1BEC1
+IsPlayerStandingOnDoorTile:: ; 06:7EC1
+	dr $1BEC1, $1BF2A
 HandleLedges:: ; 06:7F2A
 	dr $1BF2A, $4000 * $7
 
