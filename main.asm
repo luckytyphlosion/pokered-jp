@@ -398,7 +398,9 @@ CopyUncompressedPicToTilemap:: ; 0F:73BA
 CopyUncompressedPicToHL:: ; 0F:73C5
 	dr $3F3C5, $3F3F8
 LoadMonBackPic:: ; 0F:73F8
-	dr $3F3F8, $3F762
+	dr $3F3F8, $3F427
+JumpMoveEffect:: ; 0F:7427
+	dr $3F427, $3F762
 StatModifierUpEffect:: ; 0F:7762
 	dr $3F762, $4000 * $10
 
