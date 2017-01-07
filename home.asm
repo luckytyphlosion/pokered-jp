@@ -4488,8 +4488,19 @@ SetMapTextPointer::
 	ld [wMapTextPtr + 1], a
 	ret
 
+dr_tx_pre: MACRO
+	dr $3F52 + ((\1) - 1) * 2, $3F52 + (\2) * $2
+ENDM
+
 TextPredefs::
-	dr $3F52, $3F52 + $21 * $2
+	dr_tx_pre $1, $21
 	add_tx_pre JustAMomentText                      ; 22
 	add_tx_pre OpenBillsPCText                      ; 23
-	dr $3F52 + $23 * $2, $4000
+	dr_tx_pre $24, $39
+	add_tx_pre IndigoPlateauStatues                 ; 3A
+	dr_tx_pre $3B, $3E
+	add_tx_pre TownMapText                          ; 3F
+	add_tx_pre BookOrSculptureText                  ; 40
+	add_tx_pre ElevatorText                         ; 41
+	add_tx_pre PokemonStuffText                     ; 42
+	dr $3F52 + $42 * $2, $4000

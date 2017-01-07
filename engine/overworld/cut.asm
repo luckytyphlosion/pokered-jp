@@ -22,8 +22,9 @@ UsedCut:
 	jp PrintText
 
 .NothingToCutText
-	TX_FAR _NothingToCutText
-	db "@"
+	text "いあいぎリで"
+	line "きれそうな　ものが　あリません！"
+	prompt
 
 .canCut
 	ld [wCutTile], a
@@ -68,8 +69,10 @@ UsedCut:
 	jp RedrawMapView
 
 UsedCutText:
-	TX_FAR _UsedCutText
-	db "@"
+	TX_RAM wcd6d
+	text "は"
+	line "いあいぎリで　きリまくった！"
+	prompt
 
 InitCutAnimOAM:
 	xor a

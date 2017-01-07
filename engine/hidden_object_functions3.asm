@@ -88,16 +88,18 @@ IndigoPlateauStatues:
 	jp TextScriptEnd
 
 IndigoPlateauStatuesText1:
-	TX_FAR _IndigoPlateauStatuesText1
-	db "@"
+	text "ここは　セキエイ　こうげん"
+	prompt
 
 IndigoPlateauStatuesText2:
-	TX_FAR _IndigoPlateauStatuesText2
-	db "@"
+	text "<PKMN>　<TRAINR>の　ちょうてん！"
+	line "<PKMN>　リーグ　ほんぶ"
+	done
 
 IndigoPlateauStatuesText3:
-	TX_FAR _IndigoPlateauStatuesText3
-	db "@"
+	text "<PKMN>の　さいこう　きかん"
+	line "<PKMN>　リーグ　ほんぶ"
+	done
 
 BookOrSculptureText:
 	TX_ASM
@@ -114,19 +116,19 @@ BookOrSculptureText:
 	jp TextScriptEnd
 
 PokemonBooksText:
-	TX_FAR _PokemonBooksText
-	db "@"
+	text "<PKMN>の　ほんが　いっぱい！"
+	done
 
 DiglettSculptureText:
-	TX_FAR _DiglettSculptureText
-	db "@"
+	text "ぶつだん　だ<……>"
+	done
 
 ElevatorText:
-	TX_FAR _ElevatorText
-	db "@"
+	text "ここは　エレべーターだ！"
+	done
 
 TownMapText:
-	TX_FAR _TownMapText
+	text "タウンマップだ！@"
 	TX_BLINK
 	TX_ASM
 	ld a, $1
@@ -149,5 +151,6 @@ TownMapText:
 	jp CloseTextDisplay
 
 PokemonStuffText:
-	TX_FAR _PokemonStuffText
-	db "@"
+	text "わあ！　<PKMN>グッズが"
+	line "たくさん　そろってるぞ！"
+	done

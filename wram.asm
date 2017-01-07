@@ -1631,6 +1631,7 @@ wBattleMonCatchRate_NotReferenced:: db
 wBattleMonMoves::     ds NUM_MOVES
 wBattleMonDVs::       ds 2
 wBattleMonLevel::     db
+wBattleMonStats::
 wBattleMonMaxHP::     dw
 wBattleMonAttack::    dw
 wBattleMonDefense::   dw

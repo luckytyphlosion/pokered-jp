@@ -6,13 +6,13 @@ HPBarLength:
 GetHPBarLength:
 	push hl
 	xor a
-	ld hl, H_MULTIPLICAND
-	ld [hli], a
+	ld [H_MULTIPLICAND], a
 	ld a, b
-	ld [hli], a
+	ld [H_MULTIPLICAND + 1], a
 	ld a, c
-	ld [hli], a
-	ld [hl], $30
+	ld [H_MULTIPLICAND + 2], a
+	ld a, $30
+	ld [H_MULTIPLIER], a
 	call Multiply      ; 48 * bc (hp bar is 48 pixels long)
 	ld a, d
 	and a
@@ -47,16 +47,14 @@ GetHPBarLength:
 ; predef $48
 UpdateHPBar:
 UpdateHPBar2:
-	push hl
-	ld hl, wHPBarOldHP
-	ld a, [hli]
+	ld a, [wHPBarOldHP]
 	ld c, a      ; old HP into bc
-	ld a, [hli]
+	ld a, [wHPBarOldHP + 1]
 	ld b, a
-	ld a, [hli]
+	ld a, [wHPBarNewHP]
 	ld e, a      ; new HP into de
-	ld d, [hl]
-	pop hl
+	ld a, [wHPBarNewHP + 1]
+	ld d, a
 	push de
 	push bc
 	call UpdateHPBar_CalcHPDifference
@@ -213,14 +211,7 @@ UpdateHPBar_PrintHPNumber:
 	ld a, [wHPBarOldHP + 1]
 	ld [wHPBarTempHP], a
 	push hl
-	ld a, [hFlags_0xFFF6]
-	bit 0, a
-	jr z, .asm_fb15
-	ld de, $9
-	jr .next
-.asm_fb15
 	ld de, $15
-.next
 	add hl, de
 	push hl
 	ld a, " "

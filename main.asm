@@ -108,87 +108,32 @@ MapHeaderBanks:: ; 03:4883
 
 INCLUDE "engine/overworld/clear_variables.asm"
 INCLUDE "engine/overworld/player_state.asm"
+INCLUDE "engine/overworld/poison.asm"
+INCLUDE "engine/overworld/tileset_header.asm"
+INCLUDE "engine/overworld/daycare_exp.asm"
 
-ApplyOutOfBattlePoisonDamage:: ; 03:4CD5
-	dr $CCD5, $CD8D
-LoadTilesetHeader:: ; 03:4D8D
-	dr $CD8D, $CF2E
-LoadWildData:: ; 03:4F2E
-	dr $CF2E, $D63D
-UseItem_:: ; 03:563D
-	dr $D63D, $E9C4
-TossItem_:: ; 03:69C4
-	dr $E9C4, $EA6F
-IsKeyItem_:: ; 03:6A6F
-	dr $EA6F, $EAAF
-SendNewMonToBox:: ; 03:6AAF
-	dr $EAAF, $ED0E
-DrawBadges:: ; 03:6D0E
-	dr $ED0E, $F1A9
-ReplaceTileBlock:: ; 03:71A9
-	dr $F1A9, $F262
-UsedCut:: ; 03:7262
-	dr $F262, $F427
-LoadMissableObjects:: ; 03:7427
-	dr $F427, $F445
-MarkTownVisitedAndLoadMissableObjects:: ; 03:7445
-	dr $F445, $F4D8
-IsObjectHidden:: ; 03:74D8
-	dr $F4D8, $F4FA
-ShowObject:: ; 03:74FA
-	dr $F4FA, $F4FA
-ShowObject2:: ; 03:74FA
-	dr $F4FA, $F509
-HideObject:: ; 03:7509
-	dr $F509, $F557
-TryPushingBoulder:: ; 03:7557
-	dr $F557, $F5E7
-DoBoulderDustAnimation:: ; 03:75E7
-	dr $F5E7, $F617
-_AddPartyMon:: ; 03:7617
-	dr $F617, $F7A9
-LoadMovePPs:: ; 03:77A9
-	dr $F7A9, $F7D3
-_AddEnemyMonToPlayerParty:: ; 03:77D3
-	dr $F7D3, $F854
-_MoveMon:: ; 03:7854
-	dr $F854, $F99C
-FlagActionPredef:: ; 03:799C
-	dr $F99C, $F9DB
-HealParty:: ; 03:79DB
-	dr $F9DB, $FA54
-DivideBCDPredef4:: ; 03:7A54
-	dr $FA54, $FA54
-DivideBCDPredef3:: ; 03:7A54
-	dr $FA54, $FA54
-DivideBCDPredef2:: ; 03:7A54
-	dr $FA54, $FA54
-DivideBCDPredef:: ; 03:7A54
-	dr $FA54, $FB53
-AddBCDPredef:: ; 03:7B53
-	dr $FB53, $FB6C
-SubBCDPredef:: ; 03:7B6C
-	dr $FB6C, $FB86
-InitPlayerData:: ; 03:7B86
-	dr $FB86, $FB86
-InitPlayerData2:: ; 03:7B86
-	dr $FB86, $FBE0
-GetQuantityOfItemInBag:: ; 03:7BE0
-	dr $FBE0, $FBF5
-FindPathToPlayer:: ; 03:7BF5
-	dr $FBF5, $FC65
-CalcPositionOfPlayerRelativeToNPC:: ; 03:7C65
-	dr $FC65, $FCDF
-ConvertNPCMovementDirectionsToJoypadMasks:: ; 03:7CDF
-	dr $FCDF, $FD1B
-HPBarLength:: ; 03:7D1B
-	dr $FD1B, $FD5E
-UpdateHPBar:: ; 03:7D5E
-	dr $FD5E, $FD5E
-UpdateHPBar2:: ; 03:7D5E
-	dr $FD5E, $FE8A
-PrintBookshelfText:: ; 03:7E8A
-	dr $FE8A, $4000 * $4
+INCLUDE "engine/overworld/wild_mons.asm"
+
+INCLUDE "engine/items/items.asm"
+
+INCLUDE "engine/menu/draw_badges.asm"
+
+INCLUDE "engine/overworld/update_map.asm"
+INCLUDE "engine/overworld/cut.asm"
+INCLUDE "engine/overworld/missable_objects.asm"
+INCLUDE "engine/overworld/push_boulder.asm"
+
+INCLUDE "engine/add_mon.asm"
+INCLUDE "engine/flag_action.asm"
+INCLUDE "engine/heal_party.asm"
+INCLUDE "engine/bcd.asm"
+INCLUDE "engine/init_player_data.asm"
+INCLUDE "engine/get_bag_item_quantity.asm"
+INCLUDE "engine/pathfinding.asm"
+INCLUDE "engine/hp_bar.asm"
+INCLUDE "engine/hidden_object_functions3.asm"
+
+	dr $FFE1, $10000
 
 SECTION "bank4",ROMX,BANK[$4]
 
@@ -249,7 +194,9 @@ DrawHP:: ; 04:7644
 DrawHP2:: ; 04:764B
 	dr $1364B, $1369D
 StatusScreen:: ; 04:769D
-	dr $1369D, $13896
+	dr $1369D, $1382C
+PrintStatsBox:: ; 04:782C
+	dr $1382C, $13896
 StatusScreen2:: ; 04:7896
 	dr $13896, $13A0C
 DrawPartyMenu_:: ; 04:7A0C
@@ -368,7 +315,9 @@ INCBIN "baserom.gbc", $4000 * $B, $3BF6
 TrainerInfoTextBoxTileGraphics:: ; 0B:7BF6
 	dr $2FBF6, $2FC86
 TrainerInfoTextBoxTileGraphicsEnd:: ; 0B:7C86
-	dr $2FC86, $2FEE3
+	dr $2FC86, $2FE76
+CheckIfMoveIsKnown:: ; 0B:7E76
+	dr $2FE76, $2FEE3
 ScaleSpriteByTwo:: ; 0B:7EE3
 	dr $2FEE3, $4000 * $C
 
@@ -427,7 +376,11 @@ DrawPlayerHUDAndHPBar:: ; 0F:4EBE
 DrawEnemyHUDAndHPBar:: ; 0F:4F49
 	dr $3CF49, $3D00D
 DisplayBattleMenu:: ; 0F:500D
-	dr $3D00D, $3EDF1
+	dr $3D00D, $3D377
+MoveSelectionMenu:: ; 0F:5377
+	dr $3D377, $3D9A0
+IsGhostBattle:: ; 0F:59A0
+	dr $3D9A0, $3EDF1
 LoadEnemyMonData:: ; 0F:6DF1
 	dr $3EDF1, $3EFF3
 DoubleOrHalveSelectedStats:: ; 0F:6FF3
@@ -445,7 +398,9 @@ CopyUncompressedPicToTilemap:: ; 0F:73BA
 CopyUncompressedPicToHL:: ; 0F:73C5
 	dr $3F3C5, $3F3F8
 LoadMonBackPic:: ; 0F:73F8
-	dr $3F3F8, $4000 * $10
+	dr $3F3F8, $3F762
+StatModifierUpEffect:: ; 0F:7762
+	dr $3F762, $4000 * $10
 
 SECTION "bank10",ROMX,BANK[$10]
 ShowPokedexMenu:: ; 10:4000
@@ -539,8 +494,10 @@ INCLUDE "engine/predefs.asm"
 	dr $4FFFE, $4000 * $14
 
 SECTION "bank14",ROMX,BANK[$14]
-	dr $50000, $53AB3
+	dr $50000, $539EB
 
+PrintCardKeyText:: ; 14:79EB
+	dr $539EB, $53AB3
 CeladonPrizeMenu:: ; 14:7AB3
 	dr $53AB3, $4000 * $15
 
@@ -564,7 +521,11 @@ SECTION "bank16",ROMX,BANK[$16]
 INCBIN "baserom.gbc", $4000 * $16, $D99
 
 OaksAideScript:: ; 16:4D99
-	dr $58D99, $4000 * $17
+	dr $58D99, $58F8E
+CalcLevelFromExperience:: ; 16:4F8E
+	dr $58F8E, $58FB5
+CalcExperience:: ; 16:4FB5
+	dr $58FB5, $4000 * $17
 
 SECTION "bank17",ROMX,BANK[$17]
 INCBIN "baserom.gbc", $4000 * $17, $DC
@@ -578,6 +539,7 @@ SECTION "bank18",ROMX,BANK[$18]
 INCBIN "baserom.gbc", $4000 * $18, $4000
 
 SECTION "bank19",ROMX,BANK[$19]
+Overworld_GFX:: ; 19:4000
 INCBIN "baserom.gbc", $4000 * $19, $4000
 
 SECTION "bank1A",ROMX,BANK[$1A]
@@ -603,13 +565,17 @@ EnterMapAnim:: ; 1C:4A61
 _LeaveMapAnim:: ; 1C:4B0B
 	dr $70B0B, $70CD8
 IsPlayerStandingOnWarpPadOrHole:: ; 1C:4CD8
-	dr $70CD8, $70DEA
+	dr $70CD8, $70D07
+FishingAnim:: ; 1C:4D07
+	dr $70D07, $70DEA
 _HandleMidJump:: ; 1C:4DEA
 	dr $70DEA, $70ED9
 BattleTransition:: ; 1C:4ED9
 	dr $70ED9, $710C9
 FlashScreen:: ; 1C:50C9
-	dr $710C9, $714CE
+	dr $710C9, $713AA
+DisplayTownMap:: ; 1C:53AA
+	dr $713AA, $714CE
 LoadTownMap_Nest:: ; 1C:54CE
 	dr $714CE, $714FE
 LoadTownMap_Fly:: ; 1C:54FE
@@ -648,14 +614,18 @@ ChangeBox:: ; 1C:7D1B
 	dr $73D1B, $4000 * $1D
 
 SECTION "bank1D",ROMX,BANK[$1D]
-INCBIN "baserom.gbc", $4000 * $1D, $E36
+INCBIN "baserom.gbc", $4000 * $1D, $5C
 
+HiddenItemNear:: ; 1D:405C
+	dr $7405C, $74E36
 VendingMachineMenu:: ; 1D:4E36
 	dr $74E36, $4000 * $1E
 
 SECTION "bank1E",ROMX,BANK[$1E]
 PrintStatusAilment:: ; 1E:4000
-	dr $78000, $78D99
+	dr $78000, $78557
+AnimationTileset2:: ; 1E:4557
+	dr $78557, $78D99
 MoveAnimation:: ; 1E:4D99
 	dr $78D99, $798A0
 GetMoveSoundB:: ; 1E:58A0
@@ -663,6 +633,10 @@ GetMoveSoundB:: ; 1E:58A0
 CopyDownscaledMonTiles:: ; 1E:5AF1
 	dr $79AF1, $79E04
 CopyTileIDsFromList:: ; 1E:5E04
-	dr $79E04, $7BFB2
+	dr $79E04, $79EC2
+AnimCut:: ; 1E:5EC2
+	dr $79EC2, $79F80
+AnimateBoulderDust:: ; 1E:5F80
+	dr $79F80, $7BFB2
 GetMachinePrice:: ; 1E:7FB2
 	dr $7BFB2, $4000 * $1F

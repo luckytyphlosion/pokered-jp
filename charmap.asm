@@ -186,6 +186,8 @@ charmap "<……>", $56
 charmap "<TARGET>", $59
 charmap "<USER>", $5A
 charmap "<PC>", $5B ; パソコン
+charmap "<TM>", $5C ; わざマシン
+charmap "<TRAINR>", $5D ; トレーナー
 
 charmap "「", $70
 charmap "」", $71
