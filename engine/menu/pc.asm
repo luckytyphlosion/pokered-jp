@@ -99,20 +99,27 @@ LogOff:
 	ret
 
 TurnedOnPC1Text:
-	TX_FAR _TurnedOnPC1Text
-	db "@"
+	text "<PLAYER>は"
+	line "<PC>の　スイッチを　いれた！"
+	prompt
 
 AccessedBillsPCText:
-	TX_FAR _AccessedBillsPCText
-	db "@"
+	text "マサキの　<PC>と　つないだ！"
+	para "<PKMN>の　あずかリ　システムを　"
+	line "よびだした！"
+	prompt
 
 AccessedSomeonesPCText:
-	TX_FAR _AccessedSomeonesPCText
-	db "@"
+	text "だれかの　<PC>と　つないだ！"
+	para "<PKMN>の　あずかリ　システムを　"
+	line "よびだした！"
+	prompt
 
 AccessedMyPCText:
-	TX_FAR _AccessedMyPCText
-	db "@"
+	text "じぶんの　<PC>と　つないだ！"
+	para "どうぐの　あずかリ　システムを　"
+	line "よびだした！"
+	prompt
 
 ; removes one of the specified item ID [hItemToRemoveID] from bag (if existent)
 RemoveItemByID:

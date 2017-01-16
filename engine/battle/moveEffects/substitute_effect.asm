@@ -65,13 +65,16 @@ SubstituteEffect_:
 	jp PrintText
 
 SubstituteText:
-	TX_FAR _SubstituteText
-	db "@"
+	text "<USER>の"
+	line "ぶんしんが　あらわれた"
+	prompt
 
 HasSubstituteText:
-	TX_FAR _HasSubstituteText
-	db "@"
+	text "しかし　<USER>の"
+	line "みがわリは　すでに　でていた！"
+	prompt
 
 TooWeakSubstituteText:
-	TX_FAR _TooWeakSubstituteText
-	db "@"
+	text "しかし　ぶんしんを　だすには"
+	line "たいリょくが　たリなかった！"
+	prompt

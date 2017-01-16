@@ -253,14 +253,13 @@ BrunoSprite:          INCBIN "gfx/sprites/bruno.2bpp"
 LoreleiSprite:        INCBIN "gfx/sprites/lorelei.2bpp"
 SeelSprite:           INCBIN "gfx/sprites/seel.2bpp"
 
-InitMapSprites:: ; 05:7840
-	dr $17840, $17C47
+INCLUDE "engine/overworld/map_sprites.asm"
+INCLUDE "engine/load_pokedex_tiles.asm"
+INCLUDE "engine/overworld/emotion_bubbles.asm"
+INCLUDE "engine/battle/moveEffects/substitute_effect.asm"
+INCLUDE "engine/menu/pc.asm"
 
-EmotionBubble:: ; 05:7C47
-	dr $17C47, $17E34
-
-ActivatePC:: ; 05:7E34
-	dr $17E34, $4000 * $6
+	dr $17FD6, $4000 * $6
 
 SECTION "bank6",ROMX,BANK[$6]
 INCBIN "baserom.gbc", $4000 * $6, $DEE
@@ -290,7 +289,9 @@ INCBIN "baserom.gbc", $4000 * $7, $21E
 DoClearSaveDialogue:: ; 07:421E
 	dr $1C21E, $1C270
 DisplayElevatorFloorMenu:: ; 07:4270
-	dr $1C270, $1FA34
+	dr $1C270, $1F911
+OpenOaksPC:: ; 07:7911
+	dr $1F911, $1FA34
 SafariZoneCheck:: ; 07:7A34
 	dr $1FA34, $1FA43
 SafariZoneCheckSteps:: ; 07:7A43
@@ -373,7 +374,9 @@ INCBIN "baserom.gbc", $4000 * $F, $BA3
 AnyPartyAlive:: ; 0F:4BA3
 	dr $3CBA3, $3CEA1
 ReadPlayerMonCurHPAndStatus:: ; 0F:4EA1
-	dr $3CEA1, $3CEBE
+	dr $3CEA1, $3CEB8
+DrawHUDsAndHPBars:: ; 0F:4EB8
+	dr $3CEB8, $3CEBE
 DrawPlayerHUDAndHPBar:: ; 0F:4EBE
 	dr $3CEBE, $3CF49
 DrawEnemyHUDAndHPBar:: ; 0F:4F49
@@ -634,7 +637,9 @@ INCBIN "baserom.gbc", $4000 * $1D, $5C
 HiddenItemNear:: ; 1D:405C
 	dr $7405C, $74E36
 VendingMachineMenu:: ; 1D:4E36
-	dr $74E36, $4000 * $1E
+	dr $74E36, $77C49
+PKMNLeaguePC:: ; 1D:7C49
+	dr $77C49, $4000 * $1E
 
 SECTION "bank1E",ROMX,BANK[$1E]
 PrintStatusAilment:: ; 1E:4000
@@ -642,7 +647,9 @@ PrintStatusAilment:: ; 1E:4000
 AnimationTileset2:: ; 1E:4557
 	dr $78557, $78D99
 MoveAnimation:: ; 1E:4D99
-	dr $78D99, $798A0
+	dr $78D99, $79717
+AnimationSubstitute:: ; 1E:5717
+	dr $79717, $798A0
 GetMoveSoundB:: ; 1E:58A0
 	dr $798A0, $79AF1
 CopyDownscaledMonTiles:: ; 1E:5AF1
