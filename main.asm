@@ -177,10 +177,11 @@ DrawPartyMenu_:: ; 04:7A0C
 	dr $13A0C, $13A1D
 RedrawPartyMenu_:: ; 04:7A1D
 	dr $13A1D, $13FB3
-GetTrainerName_:: ; 04:7FB3
-	dr $13FB3, $13FEA
-Random_:: ; 04:7FEA
-	dr $13FEA, $4000 * $5
+
+INCLUDE "engine/battle/get_trainer_name.asm"
+INCLUDE "engine/random.asm"
+
+	dr $13FFB, $4000 * $5
 
 SECTION "bank5",ROMX,BANK[$5]
 RedCyclingSprite:     INCBIN "gfx/sprites/cycling.2bpp"

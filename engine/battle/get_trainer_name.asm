@@ -20,5 +20,5 @@ GetTrainerName_:
 	ld hl, wcd6d
 .foundName
 	ld de, wTrainerName
-	ld bc, $d
+	ld bc, $b
 	jp CopyData
