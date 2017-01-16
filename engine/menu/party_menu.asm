@@ -30,7 +30,7 @@ RedrawPartyMenu_:
 	jp z,.printMessage
 	call ErasePartyMenuCursors
 	callba InitPartyMenuBlkPacket
-	coord hl, 3, 0
+	coord hl, 3, 1
 	ld de,wPartySpecies
 	xor a
 	ld c,a
@@ -81,21 +81,15 @@ RedrawPartyMenu_:
 	cp a,EVO_STONE_PARTY_MENU
 	jr z,.evolutionStoneMenu
 	push hl
-	ld bc,14 ; 14 columns to the right
+	ld bc,-15 ; 15 columns to the left
 	add hl,bc
 	ld de,wLoadedMonStatus
 	call PrintStatusCondition
 	pop hl
 	push hl
-	ld bc,SCREEN_WIDTH + 1 ; down 1 row and right 1 column
-	ld a,[hFlags_0xFFF6]
-	set 0,a
-	ld [hFlags_0xFFF6],a
+	ld bc,-12 ; 12 columns to the left
 	add hl,bc
 	predef DrawHP2 ; draw HP bar and prints current / max HP
-	ld a,[hFlags_0xFFF6]
-	res 0,a
-	ld [hFlags_0xFFF6],a
 	call SetPartyMenuHPBarColor ; color the HP bar (on SGB)
 	pop hl
 	jr .printLevel
@@ -109,13 +103,13 @@ RedrawPartyMenu_:
 	jr nz,.placeMoveLearnabilityString
 	ld de,.notAbleToLearnMoveText
 .placeMoveLearnabilityString
-	ld bc,20 + 9 ; down 1 row and right 9 columns
 	push hl
+	ld bc,9 ; move 9 columns to the right
 	add hl,bc
 	call PlaceString
 	pop hl
 .printLevel
-	ld bc,10 ; move 10 columns to the right
+	ld bc,5 ; move 5 columns to the right
 	add hl,bc
 	call PrintLevel
 	pop hl
@@ -127,9 +121,9 @@ RedrawPartyMenu_:
 	inc c
 	jp .loop
 .ableToLearnMoveText
-	db "ABLE@"
+	db "おぼえられる@"
 .notAbleToLearnMoveText
-	db "NOT ABLE@"
+	db "おぼえられない@"
 .evolutionStoneMenu
 	push hl
 	ld hl,EvosMovesPointerTable
@@ -176,17 +170,17 @@ RedrawPartyMenu_:
 ; if it does match
 	ld de,.ableToEvolveText
 .placeEvolutionStoneString
-	ld bc,20 + 9 ; down 1 row and right 9 columns
 	pop hl
 	push hl
+	ld bc,9 ; move 9 columns to the right
 	add hl,bc
 	call PlaceString
 	pop hl
 	jr .printLevel
 .ableToEvolveText
-	db "ABLE@"
+	db "つかえる@"
 .notAbleToEvolveText
-	db "NOT ABLE@"
+	db "つかえない@"
 .afterDrawingMonEntries
 	ld b, SET_PAL_PARTY_MENU
 	call RunPaletteCommand
@@ -254,59 +248,80 @@ PartyMenuMessagePointers:
 	dw PartyMenuItemUseText
 
 PartyMenuNormalText:
-	TX_FAR _PartyMenuNormalText
-	db "@"
+	text "<PKMN>を　えらんで　ください"
+	done
 
 PartyMenuItemUseText:
-	TX_FAR _PartyMenuItemUseText
-	db "@"
+	text "どの<PKMN>に　つかいますか？"
+	done
 
 PartyMenuBattleText:
-	TX_FAR _PartyMenuBattleText
-	db "@"
+	text "どの<PKMN>を　だしますか？"
+	done
 
 PartyMenuUseTMText:
-	TX_FAR _PartyMenuUseTMText
-	db "@"
+	text "どの<PKMN>に　おしえますか？"
+	done
 
 PartyMenuSwapMonText:
-	TX_FAR _PartyMenuSwapMonText
-	db "@"
+	text "どこに　いどうしますか？"
+	done
 
 PotionText:
-	TX_FAR _PotionText
-	db "@"
+	TX_RAM wcd6d
+	text "の　たいリょくが"
+	line "@"
+	TX_NUM wHPBarHPDifference, 2, 3
+	text "　かいふくした"
+	done
 
 AntidoteText:
-	TX_FAR _AntidoteText
-	db "@"
+	TX_RAM wcd6d
+	text "の　どくは"
+	line "きれい　さっぱリ　なくなった！"
+	done
 
 ParlyzHealText:
-	TX_FAR _ParlyzHealText
-	db "@"
+	TX_RAM wcd6d
+	text "の　からだの"
+	line "しびれが　とれた"
+	done
 
 BurnHealText:
-	TX_FAR _BurnHealText
-	db "@"
+	TX_RAM wcd6d
+	text "の"
+	line "やけどが　なおった"
+	done
 
 IceHealText:
-	TX_FAR _IceHealText
-	db "@"
+	TX_RAM wcd6d
+	text "の　からだの"
+	line "こおリが　とけた"
+	done
 
 AwakeningText:
-	TX_FAR _AwakeningText
-	db "@"
+	TX_RAM wcd6d
+	text "は"
+	line "めを　さました"
+	done
 
 FullHealText:
-	TX_FAR _FullHealText
-	db "@"
+	TX_RAM wcd6d
+	text "は"
+	line "けんこうになった！"
+	done
 
 ReviveText:
-	TX_FAR _ReviveText
-	db "@"
+	TX_RAM wcd6d
+	text "は"
+	line "げんきを　とリもどした！"
+	done
 
 RareCandyText:
-	TX_FAR _RareCandyText
+	TX_RAM wcd6d
+	text "の　レべルが@"
+	TX_NUM wCurEnemyLVL, 1, 3
+	text "になった@"
 	TX_SFX_ITEM_1 ; probably supposed to play SFX_LEVEL_UP but the wrong music bank is loaded
 	TX_BLINK
 	db "@"

@@ -161,7 +161,7 @@ Evolution_PartyMonLoop: ; loop over party mons
 	ld a, [wd11e]
 	dec a
 	ld hl, BaseStats
-	ld bc, MonBaseStatsEnd - MonBaseStats
+	ld bc, $1c ; TODO: MonBaseStatsEnd - MonBaseStats
 	call AddNTimes
 	ld de, wMonHeader
 	call CopyData
@@ -296,20 +296,31 @@ CancelledEvolution:
 	jp Evolution_PartyMonLoop
 
 EvolvedText:
-	TX_FAR _EvolvedText
-	db "@"
+	text "おめでとう！　@"
+	TX_RAM wcf4b
+	text "は"
+	done
 
 IntoText:
-	TX_FAR _IntoText
-	db "@"
+	text ""
+	line "@"
+	TX_RAM wcd6d
+	text "に　しんかした"
+	done
 
 StoppedEvolvingText:
-	TX_FAR _StoppedEvolvingText
-	db "@"
+	text "あれ<……>？"
+	line "@"
+	TX_RAM wcf4b
+	text "の　へんかが　とまった！"
+	prompt
 
 IsEvolvingText:
-	TX_FAR _IsEvolvingText
-	db "@"
+	text "<……>　おや！？"
+	line "@"
+	TX_RAM wcf4b
+	text "の　ようすが<……>！"
+	done
 
 Evolution_ReloadTilesetTilePatterns:
 	ld a, [wLinkState]

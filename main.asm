@@ -172,11 +172,9 @@ INCLUDE "engine/items/tms.asm"
 	dr $122AD, $13644
 
 INCLUDE "engine/menu/status_screen.asm"
+INCLUDE "engine/menu/party_menu.asm"
 
-DrawPartyMenu_:: ; 04:7A0C
-	dr $13A0C, $13A1D
-RedrawPartyMenu_:: ; 04:7A1D
-	dr $13A1D, $13FB3
+	dr $13CBD, $13FB3
 
 INCLUDE "engine/battle/get_trainer_name.asm"
 INCLUDE "engine/random.asm"
@@ -332,14 +330,10 @@ GetMonSpecies:: ; 0E:5F0F
 	dr $39F0F, $3AD11
 PokeballTileGraphics:: ; 0E:6D11
 	dr $3AD11, $3B0A1
-TryEvolvingMon:: ; 0E:70A1
-	dr $3B0A1, $3B0AF
-EvolutionAfterBattle:: ; 0E:70AF
-	dr $3B0AF, $3B326
-LearnMoveFromLevelUp:: ; 0E:7326
-	dr $3B326, $3B383
-WriteMonMoves:: ; 0E:7383
-	dr $3B383, $4000 * $F
+
+INCLUDE "engine/evos_moves.asm"
+
+	dr $3BDB7, $4000 * $F
 
 SECTION "bankF",ROMX,BANK[$F]
 INCBIN "baserom.gbc", $4000 * $F, $BA3
@@ -566,13 +560,19 @@ AnimatePartyMon_ForceSpeed1:: ; 1C:5BBB
 AnimatePartyMon:: ; 1C:5BC3
 	dr $71BC3, $71C30
 LoadMonPartySpriteGfx:: ; 1C:5C30
-	dr $71C30, $71D46
+	dr $71C30, $71C55
+LoadMonPartySpriteGfxWithLCDDisabled:: ; 1C:5C55
+	dr $71C55, $71D2C
+WriteMonPartySpriteOAMByPartyIndex:: ; 1C:5D2C
+	dr $71D2C, $71D46
 WriteMonPartySpriteOAMBySpecies:: ; 1C:5D46
 	dr $71D46, $71F9D
 DoInGameTradeDialogue:: ; 1C:5F9D
 	dr $71F9D, $723BF
 _RunPaletteCommand:: ; 1C:63BF
-	dr $723BF, $72604
+	dr $723BF, $72596
+InitPartyMenuBlkPacket:: ; 1C:6596
+	dr $72596, $72604
 LoadSGB:: ; 1C:6604
 	dr $72604, $73A3E
 LoadSAV:: ; 1C:7A3E
@@ -616,6 +616,8 @@ CopyTileIDsFromList:: ; 1E:5E04
 AnimCut:: ; 1E:5EC2
 	dr $79EC2, $79F80
 AnimateBoulderDust:: ; 1E:5F80
-	dr $79F80, $7BFB2
+	dr $79F80, $7BE15
+EvolveMon:: ; 1E:7E15
+	dr $7BE15, $7BFB2
 GetMachinePrice:: ; 1E:7FB2
 	dr $7BFB2, $4000 * $1F
