@@ -24,6 +24,7 @@ HazeEffect_:
 	ld hl, wEnemyMonUnmodifiedAttack
 	ld de, wEnemyMonAttack
 	call ResetStats
+; cure non-volatile status, but only for the target
 	ld hl, wEnemyMonStatus
 	ld de, wEnemySelectedMove
 	ld a, [H_WHOSETURN]
