@@ -170,16 +170,9 @@ INCLUDE "engine/menu/start_sub_menus.asm"
 INCLUDE "engine/items/tms.asm"
 
 	dr $122AD, $13644
-DrawHP:: ; 04:7644
-	dr $13644, $1364B
-DrawHP2:: ; 04:764B
-	dr $1364B, $1369D
-StatusScreen:: ; 04:769D
-	dr $1369D, $1382C
-PrintStatsBox:: ; 04:782C
-	dr $1382C, $13896
-StatusScreen2:: ; 04:7896
-	dr $13896, $13A0C
+
+INCLUDE "engine/menu/status_screen.asm"
+
 DrawPartyMenu_:: ; 04:7A0C
 	dr $13A0C, $13A1D
 RedrawPartyMenu_:: ; 04:7A1D
