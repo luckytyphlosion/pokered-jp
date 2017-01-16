@@ -169,13 +169,17 @@ INCLUDE "engine/turn_sprite.asm"
 INCLUDE "engine/menu/start_sub_menus.asm"
 INCLUDE "engine/items/tms.asm"
 
-	dr $122AD, $13644
+	dr $122AD, $1362D
 
+INCLUDE "engine/overworld/is_player_just_outside_map.asm"
 INCLUDE "engine/menu/status_screen.asm"
 INCLUDE "engine/menu/party_menu.asm"
 
-	dr $13CBD, $13FB3
-
+INCLUDE "engine/battle/end_of_battle.asm"
+INCLUDE "engine/battle/wild_encounters.asm"
+INCLUDE "engine/battle/moveEffects/recoil_effect.asm"
+INCLUDE "engine/battle/moveEffects/conversion_effect.asm"
+INCLUDE "engine/battle/moveEffects/haze_effect.asm"
 INCLUDE "engine/battle/get_trainer_name.asm"
 INCLUDE "engine/random.asm"
 
@@ -300,8 +304,10 @@ SECTION "bankC",ROMX,BANK[$C]
 INCBIN "baserom.gbc", $4000 * $C, $4000
 
 SECTION "bankD",ROMX,BANK[$D]
-INCBIN "baserom.gbc", $4000 * $D, $3DD3
+INCBIN "baserom.gbc", $4000 * $D, $3D9B
 
+DisplayLinkBattleVersusTextBox:: ; 0D:7D9B
+	dr $37D9B, $37DD3
 PewterGuys:: ; 0D:7DD3
 	dr $37DD3, $37E73
 _Multiply:: ; 0D:7E73
@@ -373,7 +379,11 @@ LoadMonBackPic:: ; 0F:73F8
 JumpMoveEffect:: ; 0F:7427
 	dr $3F427, $3F762
 StatModifierUpEffect:: ; 0F:7762
-	dr $3F762, $4000 * $10
+	dr $3F762, $3FF4E
+PrintButItFailedText_:: ; 0F:7F4E
+	dr $3FF4E, $3FFDB
+PlayCurrentMoveAnimation:: ; 0F:7FDB
+	dr $3FFDB, $4000 * $10
 
 SECTION "bank10",ROMX,BANK[$10]
 ShowPokedexMenu:: ; 10:4000

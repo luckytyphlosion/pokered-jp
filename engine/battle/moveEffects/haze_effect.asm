@@ -1,3 +1,15 @@
+CureVolatileStatuses: MACRO
+	res Confused, [hl]
+	inc hl ; BATTSTATUS2
+	ld a, [hl]
+	; clear UsingXAccuracy, ProtectedByMist, GettingPumped, and Seeded statuses
+	and $ff ^((1 << UsingXAccuracy) | (1 << ProtectedByMist) | (1 << GettingPumped) | (1 << Seeded))
+	ld [hli], a ; BATTSTATUS3
+	ld a, [hl]
+	and %11110000 | (1 << Transformed) ; clear Bad Poison, Reflect and Light Screen statuses
+	ld [hl], a
+	ENDM
+
 HazeEffect_:
 	ld a, $7
 ; store 7 on every stat mod
@@ -23,9 +35,10 @@ HazeEffect_:
 .cureStatuses
 	ld a, [hl]
 	ld [hl], $0
-	and SLP | (1 << FRZ)
+	and SLP
 	jr z, .cureVolatileStatuses
-; prevent the Pokemon from executing a move if it was asleep or frozen
+; prevent the Pokemon from executing a move if it was asleep
+; BUG: doesn't check for frozen status
 	ld a, $ff
 	ld [de], a
 
@@ -37,26 +50,12 @@ HazeEffect_:
 	ld [hli], a
 	ld [hl], a
 	ld hl, wPlayerBattleStatus1
-	call CureVolatileStatuses
+	CureVolatileStatuses
 	ld hl, wEnemyBattleStatus1
-	call CureVolatileStatuses
-	ld hl, PlayCurrentMoveAnimation
-	call CallBankF
+	CureVolatileStatuses
+	callab PlayCurrentMoveAnimation
 	ld hl, StatusChangesEliminatedText
 	jp PrintText
-
-CureVolatileStatuses:
-; only cures statuses of the Pokemon not using Haze
-	res Confused, [hl]
-	inc hl ; BATTSTATUS2
-	ld a, [hl]
-	; clear UsingXAccuracy, ProtectedByMist, GettingPumped, and Seeded statuses
-	and $ff ^((1 << UsingXAccuracy) | (1 << ProtectedByMist) | (1 << GettingPumped) | (1 << Seeded))
-	ld [hli], a ; BATTSTATUS3
-	ld a, [hl]
-	and %11110000 | (1 << Transformed) ; clear Bad Poison, Reflect and Light Screen statuses
-	ld [hl], a
-	ret
 
 ResetStatMods:
 	ld b, $8
@@ -77,5 +76,6 @@ ResetStats:
 	ret
 
 StatusChangesEliminatedText:
-	TX_FAR _StatusChangesEliminatedText
-	db "@"
+	text "すべての　ステータスが"
+	line "もとに　もどった！"
+	prompt
