@@ -50,7 +50,7 @@ StartMenu_Pokemon:
 	ld hl,wTopMenuItemY
 	ld a,c
 	ld [hli],a ; top menu item Y
-	ld a,[hFieldMoveMonMenuTopMenuItemX]
+	ld a,12
 	ld [hli],a ; top menu item X
 	xor a
 	ld [hli],a ; current menu item ID
@@ -122,7 +122,7 @@ StartMenu_Pokemon:
 .outOfBattleMovePointers
 	dw .cut
 	dw .fly
-	dw .surf
+	dw .unusedFieldMove
 	dw .surf
 	dw .strength
 	dw .flash
@@ -157,6 +157,8 @@ StartMenu_Pokemon:
 	and a
 	jp z,.loop
 	jp CloseTextDisplay
+.unusedFieldMove
+	jp .loop
 .surf
 	bit 4,a ; does the player have the Soul Badge?
 	jp z,.newBadgeRequired
@@ -190,8 +192,9 @@ StartMenu_Pokemon:
 	call GBPalWhiteOutWithDelay3
 	jp .goBackToMap
 .flashLightsAreaText
-	TX_FAR _FlashLightsAreaText
-	db "@"
+	text "まばゆい　ひかリが"
+	line "あたリを　あかるく　てらす<……>"
+	prompt
 .dig
 	ld a,ESCAPE_ROPE
 	ld [wcf91],a
@@ -225,14 +228,21 @@ StartMenu_Pokemon:
 	call GBPalWhiteOutWithDelay3
 	jp .goBackToMap
 .warpToLastPokemonCenterText
-	TX_FAR _WarpToLastPokemonCenterText
-	db "@"
+	text "さいごに　やすんだ"
+	line "<PKMN>センターへ　とびます！"
+	done
 .cannotUseTeleportNowText
-	TX_FAR _CannotUseTeleportNowText
-	db "@"
+	text "ここでは　@"
+	TX_RAM wcd6d
+	text "で"
+	line "テレポートすることは　できません！"
+	prompt
 .cannotFlyHereText
-	TX_FAR _CannotFlyHereText
-	db "@"
+	text "ここでは　@"
+	TX_RAM wcd6d
+	text "で"
+	line "そらを　とぶことは　できません！"
+	prompt
 .softboiled
 	ld hl,wPartyMon1MaxHP
 	ld a,[wWhichPokemon]
@@ -270,8 +280,8 @@ StartMenu_Pokemon:
 	call PrintText
 	jp .loop
 .notHealthyEnoughText
-	TX_FAR _NotHealthyEnoughText
-	db "@"
+	text "たいリょくが　たリません！"
+	prompt
 .goBackToMap
 	call RestoreScreenTilesAndReloadTilePatterns
 	jp CloseTextDisplay
@@ -280,8 +290,9 @@ StartMenu_Pokemon:
 	call PrintText
 	jp .loop
 .newBadgeRequiredText
-	TX_FAR _NewBadgeRequiredText
-	db "@"
+	text "あたらしい　バッジを　てにするまで"
+	line "まだ　つかえません！"
+	prompt
 
 ; writes a blank tile to all possible menu cursor positions on the party menu
 ErasePartyMenuCursors:
@@ -347,7 +358,7 @@ StartMenu_Item:
 	ld hl,wTopMenuItemY
 	ld a,11
 	ld [hli],a ; top menu item Y
-	ld a,14
+	ld a,15
 	ld [hli],a ; top menu item X
 	xor a
 	ld [hli],a ; current menu item ID
@@ -439,12 +450,13 @@ StartMenu_Item:
 	jp ItemMenuLoop
 
 CannotUseItemsHereText:
-	TX_FAR _CannotUseItemsHereText
-	db "@"
+	text "ここでは　どうぐを"
+	line "つかうことは　できません"
+	prompt
 
 CannotGetOffHereText:
-	TX_FAR _CannotGetOffHereText
-	db "@"
+	text "おリることが　できない！"
+	prompt
 
 ; items which bring up the party menu when used
 UsableItems_PartyMenu:
@@ -546,7 +558,7 @@ DrawTrainerInfo:
 	call TrainerInfo_FarCopyData
 	pop bc
 	ld hl,BadgeNumbersTileGraphics  ; badge number tile patterns
-	ld de,vChars1 + $580
+	ld de,vChars1 + $680
 	call TrainerInfo_FarCopyData
 	ld hl,GymLeaderFaceAndBadgeTileGraphics  ; gym leader face and badge tile patterns
 	ld de,vChars2 + $200
@@ -556,14 +568,14 @@ DrawTrainerInfo:
 	ld hl,TextBoxGraphics
 	ld de,$00d0
 	add hl,de ; hl = colon tile pattern
-	ld de,vChars1 + $560
+	ld de,vChars1 + $740
 	ld bc,$0010
 	ld a,$04
 	push bc
 	call FarCopyData2
 	pop bc
 	ld hl,TrainerInfoTextBoxTileGraphics + $80  ; background tile pattern
-	ld de,vChars1 + $570
+	ld de,vChars1 + $750
 	call TrainerInfo_FarCopyData
 	call EnableLCD
 	ld hl,wTrainerInfoTextBoxWidthPlus1
@@ -583,7 +595,7 @@ DrawTrainerInfo:
 	coord hl, 1, 10
 	call TrainerInfo_DrawTextBox
 	coord hl, 0, 10
-	ld a,$d7
+	ld a,$f5
 	call TrainerInfo_DrawVerticalLine
 	coord hl, 19, 10
 	call TrainerInfo_DrawVerticalLine
@@ -593,18 +605,19 @@ DrawTrainerInfo:
 	coord hl, 2, 2
 	ld de,TrainerInfo_NameMoneyTimeText
 	call PlaceString
-	coord hl, 7, 2
+	coord hl, 6, 2
 	ld de,wPlayerName
 	call PlaceString
 	coord hl, 8, 4
 	ld de,wPlayerMoney
-	ld c,$e3
+	ld c,$c3
 	call PrintBCDNumber
+	ld [hl],"円"
 	coord hl, 9, 6
 	ld de,wPlayTimeHours ; hours
 	lb bc, LEFT_ALIGN | 1, 3
 	call PrintNumber
-	ld [hl],$d6 ; colon tile ID
+	ld [hl],$f4 ; colon tile ID
 	inc hl
 	ld de,wPlayTimeMinutes ; minutes
 	lb bc, LEADING_ZEROES | 1, 2
@@ -615,13 +628,14 @@ TrainerInfo_FarCopyData:
 	jp FarCopyData2
 
 TrainerInfo_NameMoneyTimeText:
-	db   "NAME/"
-	next "MONEY/"
-	next "TIME/@"
+	db   "なまえ/"
+	next "おこづかい/"
+	next "プレイじかん/@"
 
 ; $76 is a circle tile
+; $70 to $75 are tiles for "ポケモン　バッジ" (Pokémon Badges)
 TrainerInfo_BadgesText:
-	db $76,"BADGES",$76,"@"
+	db $76,$70,$71,$72,$73,$74,$75,$76,"@"
 
 ; draws a text box on the trainer info screen
 ; height is always 6

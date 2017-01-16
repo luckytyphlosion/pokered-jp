@@ -161,34 +161,15 @@ WorldMapTileGraphicsEnd:
 PlayerCharacterTitleGraphics:   INCBIN "gfx/player_title.2bpp"
 PlayerCharacterTitleGraphicsEnd:
 
-RedPicFront:: ; 04:5941
-	dr $11941, $11A4B
-ShrinkPic1:: ; 04:5A4B
-	dr $11A4B, $11AA5
-ShrinkPic2:: ; 04:5A4B
-	dr $11AA5, $11AD7
-UpdateSpriteFacingOffsetAndDelayMovement:: ; 04:5AD7
-	dr $11AD7, $11AF8
-StartMenu_Pokedex:: ; 04:5AF8
-	dr $11AF8, $11B0C
-StartMenu_Pokemon:: ; 04:5B0C
-	dr $11B0C, $11DD1
-ErasePartyMenuCursors:: ; 04:5DD1
-	dr $11DD1, $11DE6
-StartMenu_Item:: ; 04:5DE6
-	dr $11DE6, $11F60
-StartMenu_TrainerInfo:: ; 04:5F60
-	dr $11F60, $120E6
-StartMenu_SaveReset:: ; 04:60E6
-	dr $120E6, $120F9
-StartMenu_Option:: ; 04:60F9
-	dr $120F9, $12116
-SwitchPartyMon:: ; 04:6116
-	dr $12116, $12241
-CanLearnTM:: ; 04:6241
-	dr $12241, $12266
-TMToMove:: ; 04:6266
-	dr $12266, $13644
+RedPicFront:: INCBIN "pic/trainer/red.pic"
+ShrinkPic1::  INCBIN "pic/trainer/shrink1.pic"
+ShrinkPic2::  INCBIN "pic/trainer/shrink2.pic"
+
+INCLUDE "engine/turn_sprite.asm"
+INCLUDE "engine/menu/start_sub_menus.asm"
+INCLUDE "engine/items/tms.asm"
+
+	dr $122AD, $13644
 DrawHP:: ; 04:7644
 	dr $13644, $1364B
 DrawHP2:: ; 04:764B
@@ -312,10 +293,12 @@ INCBIN "baserom.gbc", $4000 * $A, $4000
 SECTION "bankB",ROMX,BANK[$B]
 INCBIN "baserom.gbc", $4000 * $B, $3BF6
 
-TrainerInfoTextBoxTileGraphics:: ; 0B:7BF6
-	dr $2FBF6, $2FC86
-TrainerInfoTextBoxTileGraphicsEnd:: ; 0B:7C86
-	dr $2FC86, $2FE76
+TrainerInfoTextBoxTileGraphics:  INCBIN "gfx/trainer_info.2bpp"
+TrainerInfoTextBoxTileGraphicsEnd:
+BlankLeaderNames:                INCBIN "gfx/leader_names.2bpp"
+CircleTile:                      INCBIN "gfx/circle_tile.2bpp"
+BadgeNumbersTileGraphics:        INCBIN "gfx/badge_numbers.2bpp"
+
 CheckIfMoveIsKnown:: ; 0B:7E76
 	dr $2FE76, $2FEE3
 ScaleSpriteByTwo:: ; 0B:7EE3
